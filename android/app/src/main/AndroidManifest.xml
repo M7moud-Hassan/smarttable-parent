@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- بلا هذا الإذن لا يخرج من التطبيق طلبٌ واحد في نسخة الإصدار، فتظهر كل
+         شاشةٍ برسالة «لا يوجد اتصال بالخادم» مهما صحّ العنوان والخادم. وFlutter
+         يضيفه إلى نسختَي debug وprofile وحدهما، فيعمل على جهاز المطوّر ويسقط
+         عند المستخدم — وهو موضعٌ لا يُشكّ فيه عادةً لأن الشيفرة واحدة. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- أندرويد 13 فما فوق لا يعرض إشعارًا بلا هذا الإذن -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <application
         android:label="smartble P"
         android:name="${applicationName}"
@@ -25,6 +32,14 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- القناة التي تستقبل إشعارات FCM حين يصل الإشعار والتطبيق مغلق،
+             ويجب أن تطابق المنشأة في PushNotificationsService. وبدونها يضع
+             النظام الإشعار في قناةٍ افتراضية بأهمّيةٍ دنيا: يصل بلا صوتٍ ولا
+             ظهورٍ على الشاشة، فيبدو أنه لم يصل. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="parent_high_importance" />
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

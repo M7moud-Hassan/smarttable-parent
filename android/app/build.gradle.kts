@@ -11,6 +11,7 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -41,4 +42,29 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// إشعارات أندرويد: الإضافة تقرأ google-services.json وتولّد منه إعدادات
+// Firebase. وبدونها يفشل `Firebase.initializeApp` على أندرويد فلا يصدر رمز
+// جهاز — وخدمةُ الإشعارات تبتلع الخطأ عمدًا كي يفتح التطبيق، فلا يظهر العطب
+// إلا في غياب الإشعارات وحده.
+//
+// وتُطبَّق مشروطةً لا مطلقةً: تطبيقُها بلا الملفّ يُسقط كل بناء أندرويد
+// برسالة "File google-services.json is missing" — بما فيه البناء الذي يعمل
+// اليوم. فمتى وُضع الملفّ عملت الإشعارات بلا تعديل سطر، وما دام غائبًا ظلّ
+// التنبيه في سجلّ البناء.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+} else {
+    // بالإنجليزية: مخرجات Gradle على ويندوز تُطبع بترميز الطرفية لا
+    // بـUTF-8، فالتنبيه العربي يظهر طلاسم — وتنبيهٌ لا يُقرأ لا يُنبّه.
+    logger.warn(
+        "google-services.json is missing - Android will build without push. " +
+        "Download it from Firebase (project smarttable-44f51) for " +
+        "sa.smartble.smartble_parent and put it in android/app/"
+    )
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

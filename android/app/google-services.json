@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "1098627702306",
+    "project_id": "smarttable-44f51",
+    "storage_bucket": "smarttable-44f51.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098627702306:android:be2e09b4e5b82d7ebd747b",
+        "android_client_info": {
+          "package_name": "com.optimalsoft.smartble"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1098627702306-g1ea7kdnu4ka0jm7cie2d2tcfmpo0s7f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.optimalsoft.smartble",
+            "certificate_hash": "21c0266e46b03f374f1914770066276db218f35c"
+          }
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBupKiwuVB62DTE-PSl8MjxXOeW-Tvg-0o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098627702306:android:e63fa8601e7ee3b1bd747b",
+        "android_client_info": {
+          "package_name": "com.smartable.tables"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBupKiwuVB62DTE-PSl8MjxXOeW-Tvg-0o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1098627702306:android:7d67a12618683776bd747b",
+        "android_client_info": {
+          "package_name": "sa.smartble.smartble_parent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBupKiwuVB62DTE-PSl8MjxXOeW-Tvg-0o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
