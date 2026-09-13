@@ -1,0 +1,249 @@
+# بناء تطبيق وليّ الأمر ورفعه إلى TestFlight — على نسق adary وبحرّاسه نفسها.
+#
+# أهمّ ما في المسار ليس البناء: الإشعارات تفشل صامتةً. التطبيق يعمل، وتظهر
+# نافذة الإذن، ويوافق وليّ الأمر، ولا يصل شيء — ولا يظهر في سجلّ البناء حرفٌ
+# واحد يدلّ على ذلك. فتُفحص الحزمة المبنيّة نفسها قبل الرفع: ملفّ Firebase
+# داخلها، وحقّ aps-environment موقَّعًا عليها فعلًا، والـ profile حاملًا خاصية
+# Push. ويسقط البناء إن اختلّ شرط، بدل أن يكتشفه وليّ أمر لا يصله خبر غياب ابنه.
+
+workflows:
+  ios-workflow:
+    name: Parent iOS TestFlight Deployment
+    integrations:
+      # نفس تكامل adary: الحساب والفريق واحد، ومشروع Firebase واحد
+      # (smarttable-44f51) وإن اختلف معرّف الحزمة.
+      app_store_connect: smarttable
+
+    environment:
+      # لا `groups` هنا: GoogleService-Info.plist مرفوعٌ في المستودع فلا سرّ
+      # يُحقن. وإن أردت حقنه من متغيّر بدل رفعه، أنشئ مجموعةً في Codemagic
+      # وأضف اسمها هنا وضع فيها GOOGLE_SERVICES_INFO_PLIST — خطوة الاستعادة
+      # أدناه تلتقطه، وتعمل بدونه.
+      vars:
+        # كما في GoogleService-Info.plist وproject.pbxproj — واختلافه عنهما
+        # يُنتج حزمةً لا يطابقها مشروع Firebase فلا يصدر لها رمز جهاز.
+        BUNDLE_ID: "sa.smartble.smartbleParent"
+        DEVELOPMENT_TEAM: "MV78XVH867"
+        # اسم الـ provisioning profile كما تراه آلة البناء لا كما في الحساب.
+        # إن بقي فارغًا انتقى السكربت أوّلَ profile يطابق المعرّف ويحمل خاصية
+        # Push، ويسرد المركَّبة كلها في السجلّ — فاقرأ الاسم منه بعد أوّل بناء
+        # وثبّته هنا. وتثبيتُه ليس تزيّدًا: على الآلة أكثر من profile مطابق،
+        # ووقع الاختيار في adary مرّةً على واحدٍ بلا Push، فمرّ البناء ومرّ
+        # الرفع ولم يصل إشعارٌ واحد.
+        PROFILE_NAME: "parent"
+        BUILD_VERSION: "1.0.0"
+        BUILD_NUMBER: "1"
+
+      ios_signing:
+        distribution_type: app_store # or: ad_hoc | development | enterprise
+        bundle_identifier: sa.smartble.smartbleParent
+
+      xcode: latest
+      # نسخة التطوير والاختبار نفسها: فرقُ نسخةٍ في Flutter يظهر في السلوك لا
+      # في البناء، فلا يصحّ أن يُبنى المرفوع بغير ما جُرّب.
+      flutter: "3.38.7"
+
+    scripts:
+      - name: Prepare Flutter
+        script: |
+          flutter clean
+          flutter pub get
+
+      # قبل البناء لا بعده: التوقيع والأرشفة والرفع تستغرق دقائق من حصّة macOS،
+      # وسقوطها على خطأٍ يظهر في ثانيةٍ هدرٌ لها.
+      #
+      # واختبارات الصور (screens_golden_test) مستثناة عمدًا: صُوِّرت مراجعُها
+      # على Windows، ورسم الخطوط يختلف على macOS — فتسقط لفرق بكسلٍ لا لعطبٍ
+      # في السلوك، ولو تُركت لأسقطت كل بناء. تُراجَع على جهاز التطوير.
+      - name: Analyze and test
+        script: |
+          set -e
+          flutter analyze
+          flutter test \
+            test/models_test.dart \
+            test/navigation_test.dart \
+            test/app_shell_test.dart \
+            test/localization_test.dart
+
+      # المستودع قد يكون عامًّا، فيمكن حقن ملفّات Firebase من متغيّرات Codemagic
+      # السرّية بدل رفعها. ولو لم تُضبط المتغيّرات استُعمل الملفّ المرفوع في
+      # المستودع، فيعمل المسارَان معًا. لتوليد القيمة:
+      #   base64 -i ios/Runner/GoogleService-Info.plist
+      - name: Restore Firebase config files
+        script: |
+          if [ -n "$GOOGLE_SERVICES_INFO_PLIST" ]; then
+            echo "$GOOGLE_SERVICES_INFO_PLIST" | base64 --decode > ios/Runner/GoogleService-Info.plist
+            echo "GoogleService-Info.plist: من متغيّر البيئة"
+          else
+            echo "GoogleService-Info.plist: من المستودع"
+          fi
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            echo "$GOOGLE_SERVICES_JSON" | base64 --decode > android/app/google-services.json
+            echo "google-services.json: من متغيّر البيئة"
+          fi
+
+      # الخطوتان اللتان تُعملان عادةً بالسحب داخل Xcode: إدراج
+      # GoogleService-Info.plist في هدف Runner، وربط Runner.entitlements ليحمل
+      # التطبيق حقّ aps-environment. تفاصيلهما في السكربت نفسه.
+      - name: Wire Firebase files into Xcode project
+        script: |
+          ruby -e "require 'xcodeproj'" 2>/dev/null || sudo gem install xcodeproj --no-document
+          cd ios
+          ruby scripts/configure_firebase.rb
+          cd ..
+
+      - name: Initialize Codemagic keychain
+        script: keychain initialize
+
+      - name: Import signing certificate into keychain
+        script: keychain add-certificates
+
+      - name: Apply provisioning profiles to Xcode project
+        script: xcode-project use-profiles
+
+      - name: Install provisioning profiles manually
+        script: |
+          echo "Installing provisioning profiles"
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          for profile in $CM_PROVISIONING_PROFILE_PATH; do
+            cp "$profile" ~/Library/MobileDevice/Provisioning\ Profiles/
+          done
+
+      - name: Configure Xcode project
+        script: |
+          cd ios
+          xcode-project use-targets
+          xcode-project set-development-team "$DEVELOPMENT_TEAM"
+          xcode-project update-build-settings --product-bundle-identifier "$BUNDLE_ID"
+          cd ..
+
+      # `xcode-project use-targets` و`update-build-settings` أعلاه يعيدان كتابة
+      # إعدادات البناء للهدف، فيسقط معها CODE_SIGN_ENTITLEMENTS الذي ضبطته خطوة
+      # "Wire Firebase files" في أوّل المسار. والنتيجة بناءٌ يمرّ بكل الفحوص
+      # السابقة — الـ profile يحمل خاصية Push فعلًا — ثم يُوقَّع التطبيق بلا
+      # الحقّ، فيردّ أبل وقت التشغيل:
+      #   no valid 'aps-environment' entitlement string found for application
+      # فيُعاد الربط هنا بعد آخر ما يكتب في إعدادات البناء، ويُتحقَّق منه.
+      - name: Re-apply entitlements after build settings rewrite
+        script: |
+          set -e
+          cd ios
+          ruby scripts/configure_firebase.rb
+          echo "--- CODE_SIGN_ENTITLEMENTS الفعلي قبل البناء ---"
+          grep -n 'CODE_SIGN_ENTITLEMENTS' Runner.xcodeproj/project.pbxproj || true
+          if ! grep -q 'CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements' \
+                 Runner.xcodeproj/project.pbxproj; then
+            echo "!! الهدف بلا ملفّ entitlements — سيُوقَّع التطبيق بلا Push."
+            exit 1
+          fi
+          echo "✓ الهدف مربوط بـ Runner.entitlements"
+          cd ..
+
+      # يُنتقى الـ profile صراحةً بدل ترك الاختيار للتوفيق: انظر تعليق السكربت.
+      # ويجري بعد كل ما يعيد كتابة إعدادات المشروع كي لا يُنقض.
+      - name: Pin the provisioning profile that supports Push
+        script: |
+          cd ios
+          ruby scripts/pin_push_profile.rb "$BUNDLE_ID" "$PROFILE_NAME"
+          cd ..
+
+      # `xcode-project` يعيد كتابة إعدادات المشروع، وكان في adary قفلٌ شرطي
+      # PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*] — والصيغة الشرطية تتغلّب
+      # على ما يكتبه use-profiles، فيوقَّع التطبيق بـ profile قديمٍ بلا Push
+      # مهما صحّ كل ما عداه. يُمنع دخولُه هنا من أصله.
+      - name: Guard against sdk-conditional signing overrides
+        script: |
+          if grep -n 'sdk=iphoneos\*\]" = ' ios/Runner.xcodeproj/project.pbxproj \
+             | grep -Ev 'CODE_SIGN_IDENTITY'; then
+            echo "!! يوجد قفل توقيع شرطي [sdk=iphoneos*] يتغلّب على use-profiles."
+            echo "   احذفه من ios/Runner.xcodeproj/project.pbxproj."
+            exit 1
+          fi
+          echo "✓ لا أقفال توقيع شرطية"
+          echo "--- الـ profile الذي سيُوقَّع به ---"
+          grep -n 'PROVISIONING_PROFILE_SPECIFIER\|DEVELOPMENT_TEAM\|CODE_SIGN_STYLE' \
+            ios/Runner.xcodeproj/project.pbxproj
+
+      - name: Update CocoaPods Repo
+        script: |
+          cd ios
+          pod repo update
+          pod install --repo-update
+          cd ..
+
+      # رقم البناء من عدّاد Codemagic لا من pubspec: الثابت في pubspec يبقى على
+      # حاله في كل بناء، و App Store Connect يرفض رقمًا مستعملًا من قبل — فيُرفض
+      # الرفع بصمت ويبقى المختبِر على النسخة القديمة، فيبدو أن كل تصليح لا يعمل
+      # والحقيقة أنه لم يصل الجهاز أصلًا.
+      - name: Build IPA for TestFlight
+        script: |
+          set -e
+          BN="${PROJECT_BUILD_NUMBER:-$BUILD_NUMBER}"
+          echo "النسخة: $BUILD_VERSION ($BN)"
+          flutter build ipa \
+            --build-name="$BUILD_VERSION" \
+            --build-number="$BN" \
+            --export-options-plist=/Users/builder/export_options.plist
+
+      # تُفحص الحزمة المبنيّة نفسها بدل انتظار شكوى وليّ أمر، ويسقط البناء قبل
+      # الرفع إلى TestFlight إن نقص شرطٌ من شروط APNs.
+      - name: Verify push notification setup
+        script: |
+          set -e
+          # الأرشيف قد يحمل الحقّ ويجرّده التصدير عند إعادة التوقيع، فالعبرة
+          # بالـ IPA المرفوع فعلًا لا بما قبله.
+          IPA=$(find build/ios/ipa -name '*.ipa' | head -1)
+          [ -n "$IPA" ] || { echo "!! لم يُعثر على ملفّ IPA"; exit 1; }
+          rm -rf /tmp/ipa_check && mkdir -p /tmp/ipa_check
+          unzip -q "$IPA" -d /tmp/ipa_check
+          APP=$(find /tmp/ipa_check/Payload -maxdepth 1 -name '*.app' | head -1)
+          [ -n "$APP" ] || { echo "!! لم يُعثر على .app داخل الـ IPA"; exit 1; }
+          echo "الحزمة المُصدَّرة: $APP"
+          echo "نسخة هذه الحزمة: $(defaults read "$APP/Info" CFBundleShortVersionString) ($(defaults read "$APP/Info" CFBundleVersion))"
+
+          # ١) بلا هذا الملفّ داخل الحزمة يفشل Firebase.initializeApp وقت
+          #    التشغيل، فلا يصدر رمز جهاز أصلًا — والخدمة تبتلع الخطأ عمدًا
+          #    كي يفتح التطبيق، فلا يظهر العطب إلا في غياب الإشعارات.
+          if [ -f "$APP/GoogleService-Info.plist" ]; then
+            echo "✓ GoogleService-Info.plist داخل الحزمة"
+          else
+            echo "!! GoogleService-Info.plist غير موجود داخل الحزمة"
+            exit 1
+          fi
+
+          # ٢) الحقّ لا يكفي وجودُه في الملفّ: العبرة بما وُقّع فعلًا.
+          ENT=$(codesign -d --entitlements :- "$APP" 2>/dev/null || true)
+          if echo "$ENT" | grep -q 'aps-environment'; then
+            echo "✓ aps-environment موقّع في التطبيق:"
+            echo "$ENT" | grep -A1 'aps-environment'
+          else
+            echo "!! التطبيق موقّع بلا aps-environment — لن يسجَّل في APNs."
+            echo "   فعّل Push Notifications على معرّف $BUNDLE_ID في"
+            echo "   developer.apple.com ثم أعد توليد الـ provisioning profile."
+            exit 1
+          fi
+
+          # ٣) وحتى لو وُقّع، لا يعمل إن كان الـ profile لا يحمل الخاصية.
+          PROFILE="$APP/embedded.mobileprovision"
+          if [ -f "$PROFILE" ]; then
+            if security cms -D -i "$PROFILE" | grep -q 'aps-environment'; then
+              echo "✓ الـ provisioning profile يحمل خاصية Push"
+            else
+              echo "!! الـ provisioning profile بلا خاصية Push"
+              exit 1
+            fi
+          fi
+
+          echo "إعداد الإشعارات سليم في هذه النسخة."
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+
+      email:
+        recipients:
+          - mahmoud.hassan.ahmed3@gmail.com
