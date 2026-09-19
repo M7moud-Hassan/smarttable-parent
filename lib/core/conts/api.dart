@@ -31,5 +31,11 @@ class Api {
   static String get baseUrl =>
       domain.endsWith('/') ? '$domain$prefix' : '$domain/$prefix';
 
+  /// فحص إصدار التطبيق. خارج `prefix` لأنه ليس من واجهة وليّ الأمر: مسارٌ
+  /// عامّ بلا مصادقة تشترك فيه التطبيقات الثلاثة.
+  static String get appVersionCheck =>
+      domain.endsWith('/') ? '${domain}common/app-version/'
+                           : '$domain/common/app-version/';
+
   static const Duration timeout = Duration(seconds: 30);
 }

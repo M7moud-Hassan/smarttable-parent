@@ -7,6 +7,8 @@ import 'core/conts/app_colors.dart';
 import 'core/conts/app_constants.dart';
 import 'core/conts/app_text_styles.dart';
 import 'core/conts/icons.dart';
+import 'core/services/app_update_service.dart';
+import 'core/share/widgets/update_required_dialog.dart';
 import 'core/utils/app_utils.dart';
 import 'features/parent/presentation/pages/login_page.dart';
 import 'features/parent/presentation/pages/main_shell.dart';
@@ -29,13 +31,33 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     super.initState();
-    _timer = Timer(AppConstants.splashDelay, _go);
+    _timer = Timer(AppConstants.splashDelay, _start);
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  /// الفحص قبل الدخول: نسخةٌ قديمة لا تتفاهم مع الخادم، فلا معنى لتركها
+  /// تفتح شاشاتٍ تفشل واحدةً بعد أخرى.
+  Future<void> _start() async {
+    final info = await AppUtils.sl<AppUpdateService>().check();
+    if (!mounted) return;
+
+    if (info.updateRequired) {
+      // إجباريّ: تبقى النافذة على شاشة البدء ولا يُكمل الإقلاع.
+      await UpdateRequiredDialog.show(context, info);
+      return;
+    }
+
+    if (info.updateAvailable) {
+      await UpdateRequiredDialog.show(context, info);
+      if (!mounted) return;
+    }
+
+    _go();
   }
 
   void _go() {

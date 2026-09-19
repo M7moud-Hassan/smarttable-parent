@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartble_parent/core/conts/app_constants.dart';
 import 'package:smartble_parent/core/conts/text.dart';
+import 'package:smartble_parent/core/services/app_update_service.dart';
 import 'package:smartble_parent/core/utils/app_utils.dart';
 import 'package:smartble_parent/features/parent/presentation/pages/forgot_password_page.dart';
 import 'package:smartble_parent/features/parent/presentation/pages/login_page.dart';
@@ -37,6 +38,10 @@ void main() {
     // موضوع الاختبار هو التنقّل لا الخادم.
     AppUtils.sl.unregister<Db>();
     AppUtils.sl.registerLazySingleton<Db>(DbFake.new);
+    // وشاشة البدء تسأل الخادم عن التحديث قبل أن تنتقل. نداءُ الشبكة لا يُستوفى
+    // في بيئة الاختبار، فتبقى الشاشة عليه ولا تبدأ الرحلة أصلاً.
+    AppUtils.sl.unregister<AppUpdateService>();
+    AppUtils.sl.registerLazySingleton<AppUpdateService>(_NoUpdateService.new);
     // الشاشات التعريفية مرئية سلفاً، فتنتقل شاشة البداية إلى الدخول.
     await AppUtils.instance.setOnboardingSeen();
   });
@@ -99,4 +104,10 @@ Future<void> _pumpApp(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.pump(AppConstants.splashDelay + const Duration(milliseconds: 100));
   await tester.pumpAndSettle();
+}
+
+/// خدمةٌ لا تسأل الخادم: الرحلة موضوعُ الاختبار لا فحصُ الإصدار.
+class _NoUpdateService extends AppUpdateService {
+  @override
+  Future<AppUpdateInfo> check() async => AppUpdateInfo.none;
 }

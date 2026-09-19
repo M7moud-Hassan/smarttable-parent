@@ -1,5 +1,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'app_text_styles.dart';
+
 /// أبعاد متكررة في التصميم. أسماؤها تصف موضعها لا قيمتها، فتغيّرها مع التصميم.
 class Dimensions {
   Dimensions._();
@@ -11,7 +13,13 @@ class Dimensions {
   static double get headerHeight => 48.h;
 
   /// ارتفاع الشريط السفلي.
-  static double get bottomBarHeight => 58.h;
+  ///
+  /// 58 في التصميم لتسميةٍ بمقاس 12. ولمّا كبر النصّ
+  /// (`AppTextStyles.scale`) فاضت الأيقونةُ والتسمية عن هذا الارتفاع بأقلّ
+  /// من بكسل، فتظهر علامة الفيض على كل شاشةٍ فيها الشريط. فيكبر معه بالنسبة
+  /// نفسها بدل تضييق المسافة بين الأيقونة والتسمية: تضييقها يُصلح مقاسَ
+  /// اليوم وحده ويعود الفيض مع أي تكبيرٍ بعده.
+  static double get bottomBarHeight => 58.h * AppTextStyles.scale;
 
   /// ارتفاع الحقل.
   static double get fieldHeight => 48.h;

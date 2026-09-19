@@ -3,6 +3,7 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/conts/api.dart';
+import '../core/services/app_update_service.dart';
 import '../core/utils/app_utils.dart';
 import '../core/utils/app_utils_imp.dart';
 import '../core/utils/calling.dart';
@@ -81,6 +82,10 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<Calling>(() => Calling());
   sl.registerLazySingleton<DioConfig>(() => DioConfig(dio: sl()));
+  // من الحاقن لا بالإنشاء في شاشة البدء: هو نداءُ شبكةٍ يسبق أوّل شاشة،
+  // فبلا استبداله في الاختبار تبقى شاشة البدء معلّقة ولا تُختبر رحلةُ
+  // التنقّل كلّها بعدها.
+  sl.registerLazySingleton<AppUpdateService>(() => AppUpdateService());
   sl.registerLazySingleton<CheckInternetConnection>(
       () => CheckInternetConnection(internetConnection: sl()));
 

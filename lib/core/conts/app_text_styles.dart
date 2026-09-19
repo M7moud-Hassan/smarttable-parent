@@ -8,18 +8,29 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
+  /// تكبيرٌ عامّ فوق مقاس التصميم.
+  ///
+  /// الأرقام أدناه تبقى أرقام حزمة التسليم فلا تُبدَّل واحدًا واحدًا: يُضرب
+  /// المقياس كلّه في معاملٍ واحد، فتكبر النصوص بالنسبة نفسها ويبقى التناسب
+  /// بينها كما رُسم — ويبقى الرجوع إلى مقاس التصميم تغييرَ رقمٍ واحد.
+  ///
+  /// ولا يصحّ وضعه في `MediaQuery` عند جذر التطبيق: اختبارات اللقطات ترسم
+  /// الشاشات في تجهيزتها لا في `ParentApp`، فلن يبلغها التكبير ولن تكشف ما
+  /// يفيض من النصّ الأكبر عن حدوده.
+  static const double scale = 1.12;
+
   // ─── مقاسات ───────────────────────────────────────────────────────────────
-  static double get s9 => 9.sp;
-  static double get s10 => 10.sp;
-  static double get s11 => 11.sp;
-  static double get s12 => 12.sp;
-  static double get s13 => 13.sp;
-  static double get s14 => 14.sp;
-  static double get s16 => 16.sp;
-  static double get s17 => 17.sp;
-  static double get s18 => 18.sp;
-  static double get s20 => 20.sp;
-  static double get s24 => 24.sp;
+  static double get s9 => 9.sp * scale;
+  static double get s10 => 10.sp * scale;
+  static double get s11 => 11.sp * scale;
+  static double get s12 => 12.sp * scale;
+  static double get s13 => 13.sp * scale;
+  static double get s14 => 14.sp * scale;
+  static double get s16 => 16.sp * scale;
+  static double get s17 => 17.sp * scale;
+  static double get s18 => 18.sp * scale;
+  static double get s20 => 20.sp * scale;
+  static double get s24 => 24.sp * scale;
 
   // ─── عناوين ───────────────────────────────────────────────────────────────
   /// عنوان الشاشة في الترويسة — 20px / 500.
