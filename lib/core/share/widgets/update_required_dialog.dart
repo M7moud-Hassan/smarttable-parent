@@ -34,7 +34,7 @@ class UpdateRequiredDialog extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 32,
-              backgroundColor: AppColors.primary.withOpacity(.12),
+              backgroundColor: AppColors.primary.withValues(alpha: .12),
               child: Icon(
                 forced ? Icons.system_update : Icons.new_releases_outlined,
                 size: 34,
