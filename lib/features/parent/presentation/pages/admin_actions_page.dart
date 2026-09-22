@@ -53,7 +53,7 @@ class AdminActionsPage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.actionsTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is ActionsLoadedState
                 ? _content(context, state)

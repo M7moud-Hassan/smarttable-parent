@@ -30,7 +30,7 @@ class AlertsSettingsPage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.alertsTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

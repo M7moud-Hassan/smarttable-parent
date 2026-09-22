@@ -49,7 +49,7 @@ class ExamsPage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.examsTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is ExamsLoadedState
                 ? _content(state.exams)

@@ -30,7 +30,7 @@ class CircularsPage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.circularsTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is CircularsLoadedState
                 ? Column(

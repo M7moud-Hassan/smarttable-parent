@@ -21,7 +21,7 @@ class Api {
   /// | جهاز حقيقي على خادم محلّي | `http://192.168.x.x:8000/` |
   static const String domain = String.fromEnvironment(
     'API_DOMAIN',
-    defaultValue: 'https://test.smartble.net/',
+    defaultValue: 'https://www.smartble.net/',
   );
 
   /// مسار واجهة تطبيق وليّ الأمر — وحدة `st_follower/parent_api` في الخادم.
@@ -33,9 +33,9 @@ class Api {
 
   /// فحص إصدار التطبيق. خارج `prefix` لأنه ليس من واجهة وليّ الأمر: مسارٌ
   /// عامّ بلا مصادقة تشترك فيه التطبيقات الثلاثة.
-  static String get appVersionCheck =>
-      domain.endsWith('/') ? '${domain}common/app-version/'
-                           : '$domain/common/app-version/';
+  static String get appVersionCheck => domain.endsWith('/')
+      ? '${domain}common/app-version/'
+      : '$domain/common/app-version/';
 
   static const Duration timeout = Duration(seconds: 30);
 }

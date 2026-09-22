@@ -33,7 +33,7 @@ class AttendancePage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.attendanceTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is AttendanceLoadedState
                 ? _content(context, state.report, studentId)

@@ -85,7 +85,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
           return ParentScaffold(
             title: AppText.personalDataTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

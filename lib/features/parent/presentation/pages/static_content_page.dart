@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../../../../core/conts/app_colors.dart';
 import '../../../../core/conts/app_text_styles.dart';
 import '../../../../core/conts/text.dart';
 import '../../../../core/share/widgets/parent_scaffold.dart';
@@ -43,20 +44,53 @@ class StaticContentPage extends StatelessWidget {
           return ParentScaffold(
             title: title,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             bodyPadding: EdgeInsets.fromLTRB(24.w, 6.h, 24.w, 32.h),
             body: state is StaticPageLoadedState
                 ? _content(state.page)
-                : Padding(
-                    padding: EdgeInsets.symmetric(vertical: 80.h),
-                    child: const Center(child: CircularProgressIndicator()),
-                  ),
+                : state is ContentFailureState
+                    ? _error(context, state)
+                    : Padding(
+                        padding: EdgeInsets.symmetric(vertical: 80.h),
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
           );
         },
       ),
     );
   }
+
+  Widget _error(BuildContext context, ContentFailureState state) => Padding(
+        padding: EdgeInsets.symmetric(vertical: 60.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.error_outline, size: 44.sp, color: AppColors.danger),
+            SizedBox(height: 12.h),
+            Text(
+              state.failure.message,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMuted,
+            ),
+            SizedBox(height: 18.h),
+            ElevatedButton(
+              onPressed: () => context
+                  .read<ContentBloc>()
+                  .add(GetStaticPageEvent(kind: kind)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                minimumSize: Size(160.w, 44.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24.r),
+                ),
+              ),
+              child: Text(AppText.retry),
+            ),
+          ],
+        ),
+      );
 
   Widget _content(StaticPage page) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

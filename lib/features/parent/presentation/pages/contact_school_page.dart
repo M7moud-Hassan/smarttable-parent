@@ -33,7 +33,7 @@ class ContactSchoolPage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.contactSchoolTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is SchoolLoadedState
                 ? _content(state.info)

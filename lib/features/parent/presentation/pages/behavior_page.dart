@@ -34,7 +34,7 @@ class BehaviorPage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.behaviorTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is BehaviorLoadedState
                 ? _content(context, state)

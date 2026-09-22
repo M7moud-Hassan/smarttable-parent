@@ -32,7 +32,7 @@ class CircularDetailsPage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.circularTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is CircularDetailsLoadedState
                 ? _content(state.circular)

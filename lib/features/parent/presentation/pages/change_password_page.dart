@@ -58,7 +58,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
           return ParentScaffold(
             title: AppText.passwordTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,

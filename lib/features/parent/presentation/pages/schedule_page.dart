@@ -30,7 +30,7 @@ class SchedulePage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.scheduleTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is ScheduleLoadedState
                 ? _content(context, state)

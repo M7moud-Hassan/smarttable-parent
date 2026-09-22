@@ -61,7 +61,7 @@ class _HealthPageState extends State<HealthPage> {
           return ParentScaffold(
             title: AppText.healthTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is HealthFormState
                 ? _form(context, state, studentId)

@@ -58,7 +58,7 @@ class _ExcusePageState extends State<ExcusePage> {
           return ParentScaffold(
             title: AppText.excuseTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is ExcuseFormState
                 ? _form(context, state, studentId)

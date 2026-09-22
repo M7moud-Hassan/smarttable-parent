@@ -35,7 +35,7 @@ class _FaqPageState extends State<FaqPage> {
           return ParentScaffold(
             title: AppText.faqTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: state is FaqLoadedState
                 ? Column(

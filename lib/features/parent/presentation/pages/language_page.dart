@@ -31,7 +31,7 @@ class LanguagePage extends StatelessWidget {
           return ParentScaffold(
             title: AppText.languageTitle,
             onBack: AppUtils.back,
-            showBottomNav: true,
+            showBottomNav: false,
             onTabSelected: MainShell.openTab,
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
