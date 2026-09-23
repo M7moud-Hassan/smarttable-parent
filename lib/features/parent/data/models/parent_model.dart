@@ -15,6 +15,7 @@ class ParentUser extends Equatable {
     this.workplace = '',
     this.avatar,
     this.schoolName = '',
+    this.parentAppActive = true,
   });
 
   final String id;
@@ -34,6 +35,10 @@ class ParentUser extends Equatable {
   /// اسم مدرسة الطالب المختار — يظهر تحت التحية في الرئيسية.
   final String schoolName;
 
+  /// مفعَّلٌ إن كانت مدرسة الطالب مشتركة في تطبيق ولي الأمر — تطبيقه هو، أو
+  /// المتابع الإداري، أو الجدول الذكي الأساسي، أيٌّ منها يكفي.
+  final bool parentAppActive;
+
   /// الرقم بصيغة العرض في شاشة «حسابي»: `+966 55 123 4567`.
   String get displayPhone => PhoneFormat.display(phone);
 
@@ -49,6 +54,7 @@ class ParentUser extends Equatable {
     String? workplace,
     String? avatar,
     String? schoolName,
+    bool? parentAppActive,
   }) =>
       ParentUser(
         id: id,
@@ -60,6 +66,7 @@ class ParentUser extends Equatable {
         workplace: workplace ?? this.workplace,
         avatar: avatar ?? this.avatar,
         schoolName: schoolName ?? this.schoolName,
+        parentAppActive: parentAppActive ?? this.parentAppActive,
       );
 
   factory ParentUser.fromJson(Map<String, dynamic> json) => ParentUser(
@@ -72,6 +79,7 @@ class ParentUser extends Equatable {
         workplace: json['workplace']?.toString() ?? '',
         avatar: json['avatar']?.toString(),
         schoolName: json['school_name']?.toString() ?? '',
+        parentAppActive: json['parent_app_active'] as bool? ?? true,
       );
 
   Map<String, dynamic> toJson() => {
@@ -84,9 +92,20 @@ class ParentUser extends Equatable {
         'workplace': workplace,
         'avatar': avatar,
         'school_name': schoolName,
+        'parent_app_active': parentAppActive,
       };
 
   @override
-  List<Object?> get props =>
-      [id, name, phone, username, email, nationalId, workplace, avatar, schoolName];
+  List<Object?> get props => [
+        id,
+        name,
+        phone,
+        username,
+        email,
+        nationalId,
+        workplace,
+        avatar,
+        schoolName,
+        parentAppActive,
+      ];
 }

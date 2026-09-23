@@ -91,40 +91,56 @@ class _HomePageState extends State<HomePage> {
                     onBell: () => widget.onTab(ParentTab.notifications),
                   ),
                   bodyPadding: EdgeInsets.only(bottom: 28.h),
-                  body: BlocBuilder<HomeBloc, HomeState>(
-                    builder: (context, state) {
-                      if (studentsState is StudentsFailureState) {
-                        return Center(
+                  // شريط الأبناء يبقى ظاهراً بصرف النظر عن حال الرئيسية:
+                  // فشل جلبها (مثلاً مدرسة الطالب المختار غير مشتركة) لا
+                  // يمنع وليّ الأمر من اختيار ابنٍ آخر مدرسته مشتركة.
+                  body: studentsState is StudentsFailureState
+                      ? Center(
                           child: Text(
                             studentsState.failure.message,
                             textAlign: TextAlign.center,
                             style: AppTextStyles.bodyMuted,
                           ),
-                        );
-                      }
-                      if (state is HomeLoading || state is HomeInitial) {
-                        return Padding(
-                          padding: EdgeInsets.symmetric(vertical: 80.h),
-                          child:
-                              const Center(child: CircularProgressIndicator()),
-                        );
-                      }
-                      if (state is HomeFailureState) {
-                        return Center(
-                          child: Text(
-                            state.failure.message,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyMuted,
-                          ),
-                        );
-                      }
-                      if (state is! HomeLoadedState) {
-                        return const SizedBox.shrink();
-                      }
-                      return _content(
-                          context, state.summary, students, selected);
-                    },
-                  ),
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (!Responsive.isTablet(context) &&
+                                students.length > 1)
+                              _studentSelector(context, students, selected),
+                            BlocBuilder<HomeBloc, HomeState>(
+                              builder: (context, state) {
+                                if (state is HomeLoading ||
+                                    state is HomeInitial) {
+                                  return Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 80.h),
+                                    child: const Center(
+                                        child: CircularProgressIndicator()),
+                                  );
+                                }
+                                if (state is HomeFailureState) {
+                                  return Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 40.h),
+                                    child: Center(
+                                      child: Text(
+                                        state.failure.message,
+                                        textAlign: TextAlign.center,
+                                        style: AppTextStyles.bodyMuted,
+                                      ),
+                                    ),
+                                  );
+                                }
+                                if (state is! HomeLoadedState) {
+                                  return const SizedBox.shrink();
+                                }
+                                return _content(
+                                    context, state.summary, selected);
+                              },
+                            ),
+                          ],
+                        ),
                 );
               },
             );
@@ -134,10 +150,41 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// شريط اختيار الطالب — يظهر بصرف النظر عن نجاح تحميل الرئيسية أو فشله،
+  /// فهو وسيلة الخروج حين تكون مدرسة المختار غير مشتركة.
+  Widget _studentSelector(
+    BuildContext context,
+    List<Student> students,
+    Student? selected,
+  ) {
+    final horizontal =
+        EdgeInsets.symmetric(horizontal: Dimensions.screenPadding);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: horizontal.copyWith(top: 20.h),
+          child: SectionTitle(
+            'اختر الطالب (${students.length})',
+            trailing: Text(AppText.swipeToSwitch,
+                style: AppTextStyles.captionFaint),
+          ),
+        ),
+        SizedBox(height: 12.h),
+        StudentStrip(
+          students: students,
+          selectedId: selected?.id,
+          onSelect: (student) => context
+              .read<StudentsBloc>()
+              .add(SelectStudentEvent(student: student)),
+        ),
+      ],
+    );
+  }
+
   Widget _content(
     BuildContext context,
     HomeSummary summary,
-    List<Student> students,
     Student? selected,
   ) {
     final horizontal =
@@ -146,26 +193,7 @@ class _HomePageState extends State<HomePage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // شريط الأبناء يُخفى في التابلت لأن الشريط الجانبي يحمله.
-        if (!Responsive.isTablet(context) && students.length > 1) ...[
-          Padding(
-            padding: horizontal.copyWith(top: 20.h),
-            child: SectionTitle(
-              'اختر الطالب (${students.length})',
-              trailing: Text(AppText.swipeToSwitch,
-                  style: AppTextStyles.captionFaint),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          StudentStrip(
-            students: students,
-            selectedId: selected?.id,
-            onSelect: (student) => context
-                .read<StudentsBloc>()
-                .add(SelectStudentEvent(student: student)),
-          ),
-        ] else
-          SizedBox(height: 16.h),
+        SizedBox(height: 16.h),
         if (summary.absenceAlert != null)
           Padding(
             padding: horizontal,

@@ -32,3 +32,11 @@ class ValidationFailure extends Failure {
 class UnauthorizedFailure extends Failure {
   const UnauthorizedFailure({required super.message, required super.title});
 }
+
+/// المدرسة لم تفعّل تطبيق ولي الأمر ولا تجربته المجانية. تُعرض بحوار مخصّص
+/// (`ParentAppInactiveDialog`) لا برسالة الخادم — فرسالتها هنا عربية ثابتة،
+/// احتياطًا فقط لو عرضتها شاشة مباشرة بدل الاستماع لذلك الحوار.
+class ParentAppInactiveFailure extends Failure {
+  const ParentAppInactiveFailure()
+      : super(title: 'غير مفعّل', message: 'التطبيق غير مفعّل في هذه المدرسة.');
+}

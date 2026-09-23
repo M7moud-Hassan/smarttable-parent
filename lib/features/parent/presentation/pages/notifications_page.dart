@@ -41,53 +41,70 @@ class NotificationsPage extends StatelessWidget {
           currentTab: tab,
           onTabSelected: onTab,
           hasUnreadNotifications: unread > 0,
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          scrollable: false,
+          body: RefreshIndicator(
+            onRefresh: () => _refresh(context),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    '$unread${AppText.unreadCount}',
-                    style: TextStyle(
-                      fontSize: AppTextStyles.s12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textMuted,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '$unread${AppText.unreadCount}',
+                        style: TextStyle(
+                          fontSize: AppTextStyles.s12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      TextLinkButton(
+                        label: AppText.markAllRead,
+                        onTap: () => context
+                            .read<NotificationsBloc>()
+                            .add(MarkAllReadEvent()),
+                      ),
+                    ],
                   ),
-                  TextLinkButton(
-                    label: AppText.markAllRead,
-                    onTap: () => context
-                        .read<NotificationsBloc>()
-                        .add(MarkAllReadEvent()),
-                  ),
+                  SizedBox(height: 16.h),
+                  if (state is NotificationsLoading)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 60.h),
+                      child: const Center(child: CircularProgressIndicator()),
+                    )
+                  else if (state is NotificationsLoadedState)
+                    if (state.notifications.isEmpty)
+                      Padding(
+                        padding: EdgeInsets.symmetric(vertical: 60.h),
+                        child: Text(
+                          AppText.noNotifications,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodyMuted,
+                        ),
+                      )
+                    else
+                      for (final item in state.notifications) ...[
+                        _card(context, item),
+                        SizedBox(height: 12.h),
+                      ],
                 ],
               ),
-              SizedBox(height: 16.h),
-              if (state is NotificationsLoading)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 60.h),
-                  child: const Center(child: CircularProgressIndicator()),
-                )
-              else if (state is NotificationsLoadedState)
-                if (state.notifications.isEmpty)
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 60.h),
-                    child: Text(
-                      AppText.noNotifications,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMuted,
-                    ),
-                  )
-                else
-                  for (final item in state.notifications) ...[
-                    _card(context, item),
-                    SizedBox(height: 12.h),
-                  ],
-            ],
+            ),
           ),
         );
       },
+    );
+  }
+
+  /// يطلب قائمة جديدة وينتظر نتيجتها، كي يعرف `RefreshIndicator` متى يُخفي
+  /// دائرة التحميل.
+  Future<void> _refresh(BuildContext context) {
+    final bloc = context.read<NotificationsBloc>();
+    bloc.add(GetNotificationsEvent());
+    return bloc.stream.firstWhere(
+      (s) => s is NotificationsLoadedState || s is NotificationsFailureState,
     );
   }
 

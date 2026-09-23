@@ -44,3 +44,10 @@ class UnauthorizedException implements AppException {
   Failure map(String message, String title) =>
       UnauthorizedFailure(message: reason.isEmpty ? message : reason, title: title);
 }
+
+/// المدرسة لم تفعّل تطبيق ولي الأمر — يميَّز بـ`code` من الخادم لا بنص
+/// `message`، فيبقى التمييز صحيحًا مهما كانت لغة الردّ.
+class ParentAppInactiveException implements AppException {
+  @override
+  Failure map(String message, String title) => const ParentAppInactiveFailure();
+}

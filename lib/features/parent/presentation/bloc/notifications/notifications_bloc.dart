@@ -20,7 +20,9 @@ class NotificationsBloc extends BaseBloc<NotificationsEvent, NotificationsState>
   }) : super(NotificationsInitial()) {
     on<NotificationsEvent>((event, emit) async {
       if (event is GetNotificationsEvent) {
-        emit(NotificationsLoading());
+        // لا يُخفي القائمة الظاهرة أثناء إعادة الجلب (سحب للتحديث أو فتح
+        // التبويب من جديد)، بل تبقى حتى تصل نتيجة الجلب.
+        if (state is! NotificationsLoadedState) emit(NotificationsLoading());
         result = await getNotificationsUseCase();
         result.fold(
           (failure) => emit(NotificationsFailureState(failure: failure)),

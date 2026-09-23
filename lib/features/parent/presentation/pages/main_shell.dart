@@ -31,19 +31,37 @@ class MainShell extends StatefulWidget {
 class MainShellState extends State<MainShell> {
   late ParentTab _tab = widget.initialTab;
 
-  /// ينقل إلى تبويب من خارج الشريط — إشعار يفتح شاشته مثلاً.
-  void select(ParentTab tab) => setState(() => _tab = tab);
+  // البلوكان يعيشان فوق التبويبات لأن كليهما يخدم أكثر من تبويب: الأبناء
+  // يظهرون في الرئيسية والشريط الجانبي، وعدّاد الإشعارات يظهر على الشريط
+  // السفلي في كل تبويب. يُحتفَظ بهما كحقلين لا يُعاد إنشاؤهما مع كل `build`،
+  // كي يمكن إعادة طلب الإشعارات عند فتح تبويبها دون فقد حالتهما الحالية.
+  late final _studentsBloc = bloc<StudentsBloc>()..add(GetStudentsEvent());
+  late final _notificationsBloc =
+      bloc<NotificationsBloc>()..add(GetNotificationsEvent());
+
+  /// ينقل إلى تبويب من خارج الشريط — إشعار يفتح شاشته مثلاً. وفتح تبويب
+  /// الإشعارات يعيد طلبها من الخادم دومًا، فلا يبقى إشعارٌ وصل بعد آخر جلب
+  /// غائبًا عن القائمة حتى تُعاد فتح التطبيق.
+  void select(ParentTab tab) {
+    setState(() => _tab = tab);
+    if (tab == ParentTab.notifications) {
+      _notificationsBloc.add(GetNotificationsEvent());
+    }
+  }
+
+  @override
+  void dispose() {
+    _studentsBloc.close();
+    _notificationsBloc.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // البلوكان يعيشان فوق التبويبات لأن كليهما يخدم أكثر من تبويب:
-        // الأبناء يظهرون في الرئيسية والشريط الجانبي، وعدّاد الإشعارات
-        // يظهر على الشريط السفلي في كل تبويب.
-        BlocProvider(create: (_) => bloc<StudentsBloc>()..add(GetStudentsEvent())),
-        BlocProvider(
-            create: (_) => bloc<NotificationsBloc>()..add(GetNotificationsEvent())),
+        BlocProvider.value(value: _studentsBloc),
+        BlocProvider.value(value: _notificationsBloc),
       ],
       child: IndexedStack(
         index: _tab.index,

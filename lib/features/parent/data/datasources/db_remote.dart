@@ -53,6 +53,9 @@ class DbRemote implements Db {
       );
       final payload = response.data;
       if (payload is Map && payload['success'] == false) {
+        if (payload['code'] == 'parent_app_inactive') {
+          throw ParentAppInactiveException();
+        }
         throw ServerException(payload['message']?.toString() ?? '');
       }
       return payload is Map ? payload['data'] : payload;

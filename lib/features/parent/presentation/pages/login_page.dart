@@ -11,6 +11,7 @@ import '../../../../core/enums/snack_bar_type_enum.dart';
 import '../../../../core/share/inputs/app_text_field.dart';
 import '../../../../core/share/widgets/app_card.dart';
 import '../../../../core/share/widgets/buttons.dart';
+import '../../../../core/share/widgets/parent_app_inactive_dialog.dart';
 import '../../../../core/utils/app_utils.dart';
 import '../../../../injections/injection_main.dart';
 import '../../domain/entities/login_entity.dart';
@@ -49,7 +50,11 @@ class _LoginPageState extends State<LoginPage> {
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthenticatedState) {
-            AppUtils.goAndReplace(const SelectStudentPage());
+            if (!state.user.parentAppActive) {
+              ParentAppInactiveDialog.show(context);
+            } else {
+              AppUtils.goAndReplace(const SelectStudentPage());
+            }
           } else if (state is AuthFailureState) {
             AppUtils.showCustomSnackbar(state.failure.message, SnackType.FAILURE);
           }

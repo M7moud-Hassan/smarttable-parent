@@ -37,5 +37,6 @@ class Api {
       ? '${domain}common/app-version/'
       : '$domain/common/app-version/';
 
+
   static const Duration timeout = Duration(seconds: 30);
 }
