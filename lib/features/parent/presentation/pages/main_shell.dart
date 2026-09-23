@@ -37,7 +37,7 @@ class MainShellState extends State<MainShell> {
   // كي يمكن إعادة طلب الإشعارات عند فتح تبويبها دون فقد حالتهما الحالية.
   late final _studentsBloc = bloc<StudentsBloc>()..add(GetStudentsEvent());
   late final _notificationsBloc =
-      bloc<NotificationsBloc>()..add(GetNotificationsEvent());
+      bloc<NotificationsBloc>()..add(const GetNotificationsEvent());
 
   /// ينقل إلى تبويب من خارج الشريط — إشعار يفتح شاشته مثلاً. وفتح تبويب
   /// الإشعارات يعيد طلبها من الخادم دومًا، فلا يبقى إشعارٌ وصل بعد آخر جلب
@@ -45,7 +45,7 @@ class MainShellState extends State<MainShell> {
   void select(ParentTab tab) {
     setState(() => _tab = tab);
     if (tab == ParentTab.notifications) {
-      _notificationsBloc.add(GetNotificationsEvent());
+      _notificationsBloc.add(const GetNotificationsEvent());
     }
   }
 
