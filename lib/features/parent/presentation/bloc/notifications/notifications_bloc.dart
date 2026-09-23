@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../../core/bloc/base_bloc.dart';
 import '../../../../../core/errors/failure.dart';
@@ -29,6 +30,7 @@ class NotificationsBloc extends BaseBloc<NotificationsEvent, NotificationsState>
           (value) => emit(
               NotificationsLoadedState(notifications: value as List<ParentNotification>)),
         );
+        event.onDone?.call();
       } else if (event is MarkAllReadEvent) {
         result = await markAllReadUseCase();
         result.fold(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -98,14 +100,17 @@ class NotificationsPage extends StatelessWidget {
     );
   }
 
-  /// يطلب قائمة جديدة وينتظر نتيجتها، كي يعرف `RefreshIndicator` متى يُخفي
-  /// دائرة التحميل.
+  /// يطلب قائمة جديدة وينتظر اكتمال المحاولة (لا تغيّر الحالة) كي يعرف
+  /// `RefreshIndicator` متى يُخفي دائرة التحميل. الاعتماد على تدفّق الحالة
+  /// (`bloc.stream.firstWhere`) كان يُعلّق المؤشر إلى الأبد حين تعود نفس
+  /// الإشعارات دون جديد: عندها لا يبثّ `emit` شيئًا لأن الحالة الجديدة تساوي
+  /// الحالية (`Equatable`).
   Future<void> _refresh(BuildContext context) {
-    final bloc = context.read<NotificationsBloc>();
-    bloc.add(GetNotificationsEvent());
-    return bloc.stream.firstWhere(
-      (s) => s is NotificationsLoadedState || s is NotificationsFailureState,
-    );
+    final completer = Completer<void>();
+    context
+        .read<NotificationsBloc>()
+        .add(GetNotificationsEvent(onDone: completer.complete));
+    return completer.future;
   }
 
   Widget _card(BuildContext context, ParentNotification item) {
