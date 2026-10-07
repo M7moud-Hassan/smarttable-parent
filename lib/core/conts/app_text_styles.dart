@@ -17,7 +17,7 @@ class AppTextStyles {
   /// ولا يصحّ وضعه في `MediaQuery` عند جذر التطبيق: اختبارات اللقطات ترسم
   /// الشاشات في تجهيزتها لا في `ParentApp`، فلن يبلغها التكبير ولن تكشف ما
   /// يفيض من النصّ الأكبر عن حدوده.
-  static const double scale = 1.12;
+  static const double scale = 1.25;
 
   // ─── مقاسات ───────────────────────────────────────────────────────────────
   static double get s9 => 9.sp * scale;

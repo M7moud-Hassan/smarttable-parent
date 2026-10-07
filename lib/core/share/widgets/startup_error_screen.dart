@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../conts/app_colors.dart';
 import '../../conts/text.dart';
+import '../../conts/app_text_styles.dart';
 
 /// ما يُعرض حين تفشل تهيئة التطبيق.
 ///
@@ -34,7 +35,7 @@ class StartupErrorScreen extends StatelessWidget {
                     AppText.startupFailed,
                     style: const TextStyle(
                       fontFamily: 'IBMPlexSansArabic',
-                      fontSize: 18,
+                      fontSize: 18 * AppTextStyles.scale,
                       fontWeight: FontWeight.w600,
                       color: AppColors.text,
                     ),
@@ -45,7 +46,7 @@ class StartupErrorScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontFamily: 'IBMPlexSansArabic',
-                      fontSize: 12,
+                      fontSize: 12 * AppTextStyles.scale,
                       color: AppColors.textMuted,
                       height: 1.7,
                     ),
@@ -65,7 +66,7 @@ class StartupErrorScreen extends StatelessWidget {
                       AppText.retry,
                       style: const TextStyle(
                         fontFamily: 'IBMPlexSansArabic',
-                        fontSize: 15,
+                        fontSize: 15 * AppTextStyles.scale,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

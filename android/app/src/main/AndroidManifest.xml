@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- أندرويد 13 فما فوق لا يعرض إشعارًا بلا هذا الإذن -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- جوجل بلاي ترفض الحزمة حين يكون المُعلن في Play Console أن التطبيق
+         يستخدم معرّف الإعلانات بينما الإذن غائبٌ عن المانيفست. والإذن نفسه لا
+         يجمع شيئًا ولا يفتح إعلانات؛ هو تصريحٌ بأن مكتبات جوجل قد تقرأ المعرّف. -->
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     <application
         android:label="smartble P"
         android:name="${applicationName}"

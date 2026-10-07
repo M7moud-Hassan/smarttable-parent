@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/conts/app_colors.dart';
 import 'core/conts/app_constants.dart';
 import 'core/conts/app_text_styles.dart';
-import 'core/conts/icons.dart';
+import 'core/conts/images.dart';
 import 'core/services/app_update_service.dart';
 import 'core/share/widgets/update_required_dialog.dart';
 import 'core/utils/app_utils.dart';
@@ -94,7 +94,19 @@ class _SplashPageState extends State<SplashPage> {
                 ],
               ),
               alignment: Alignment.center,
-              child: Icon(AppIcons.school, size: 66.sp, color: AppColors.primary),
+              // أيقونة التطبيق نفسها لا رمزٌ من خطّ الأيقونات: ما يظهر على شاشة
+              // البدء هو ما ضغط عليه المستخدم قبل لحظةٍ في قائمة تطبيقاته،
+              // فلا ينقطع الخيط بين الأمرين. وخلفية الملفّ بيضاء كخلفية الإطار،
+              // فالقصّ بالاستدارة نفسها يُخفي حدّها فيبدوان شيئًا واحدًا.
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(34.r),
+                child: Image.asset(
+                  AppImages.launcherIcon,
+                  width: 132.w,
+                  height: 132.w,
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
             SizedBox(height: 22.h),
             Text(AppConstants.wordmark, style: AppTextStyles.wordmark),

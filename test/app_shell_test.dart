@@ -24,6 +24,20 @@ import 'package:smartble_parent/main.dart';
 ///
 /// والعبرة في تجاوز الانتقال الأول: هو ينجح في كل حال، وإنما يسقط ما بعده حين
 /// تتساوى أسماء المسارات. فاختبار يبني شاشة واحدة بمفردها لا يكشف العطل.
+
+/// نقرةٌ تُظهر هدفها أولًا.
+///
+/// الشاشات داخل `SingleChildScrollView`، فما تحت الطيّة يُبلَغ بالتمرير في
+/// التطبيق ولا يُبلَغ في الاختبار: `tap` يحسب إحداثيّة الهدف، فإن خرجت عن
+/// الشاشة لم تُصب شيئًا. وبلا `ensureVisible` يصير الاختبار رهنَ ما يسع
+/// الشاشةَ من نصّ، فيسقط لتكبير حجم الخطّ وحده والتنقّل — وهو موضوعه — سليم.
+Future<void> _tap(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -53,14 +67,14 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
 
     // A3 ← A4: الانتقال الأول.
-    await tester.tap(find.text(AppText.firstTimeRegister));
+    await _tap(tester, find.text(AppText.firstTimeRegister));
     await tester.pumpAndSettle();
     expect(find.byType(RegisterPhonePage), findsOneWidget);
 
     // A4 ← A5: الانتقال الثاني — وهو ما يسقط حين تتساوى أسماء المسارات.
     await tester.enterText(find.byType(TextField).first, '0551234567');
     await tester.pumpAndSettle();
-    await tester.tap(find.text(AppText.sendOtp));
+    await _tap(tester, find.text(AppText.sendOtp));
     await tester.pumpAndSettle();
     expect(find.byType(OtpPage), findsOneWidget, reason: 'الانتقال الثاني هو موضع العطل');
 
@@ -74,7 +88,7 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
 
     // A3 ← A8: انتقال ثالث من الشاشة نفسها إلى وجهة أخرى.
-    await tester.tap(find.text(AppText.forgotPassword));
+    await _tap(tester, find.text(AppText.forgotPassword));
     await tester.pumpAndSettle();
     expect(find.byType(ForgotPasswordPage), findsOneWidget);
   });

@@ -1,5 +1,6 @@
 import '../../conts/app_colors.dart';
 import 'package:flutter/material.dart';
+import '../../conts/app_text_styles.dart';
 
 /// التطبيق غير مفعَّل في مدرسة الطالب — إعلاميّة بحتة وقابلة للإغلاق: لا
 /// إجراء لولي الأمر داخل التطبيق نفسه، التفعيل يتم من حساب المدرسة.
@@ -34,14 +35,14 @@ class ParentAppInactiveDialog extends StatelessWidget {
           const Text(
             'التطبيق غير مفعّل في هذه المدرسة',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18 * AppTextStyles.scale, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           const Text(
             'يلزم أن تفعّل إدارة المدرسة الاشتراك في تطبيق ولي الأمر '
             'حتى تتمكن من متابعة ابنك.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, height: 1.5),
+            style: TextStyle(fontSize: 14 * AppTextStyles.scale, height: 1.5),
           ),
         ],
       ),

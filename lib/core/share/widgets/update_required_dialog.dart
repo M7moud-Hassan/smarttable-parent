@@ -1,6 +1,7 @@
 import '../../conts/app_colors.dart';
 import '../../services/app_update_service.dart';
 import 'package:flutter/material.dart';
+import '../../conts/app_text_styles.dart';
 
 /// نافذة التحديث.
 ///
@@ -45,7 +46,7 @@ class UpdateRequiredDialog extends StatelessWidget {
             Text(
               forced ? 'تحديث مطلوب' : 'يتوفر تحديث جديد',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18 * AppTextStyles.scale, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
@@ -55,13 +56,13 @@ class UpdateRequiredDialog extends StatelessWidget {
                       ? 'يلزم تحديث التطبيق للاستمرار في استخدامه.'
                       : 'صدرت نسخة جديدة من التطبيق.'),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, height: 1.5),
+              style: const TextStyle(fontSize: 14 * AppTextStyles.scale, height: 1.5),
             ),
             if (info.latestVersion.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
                 'أحدث إصدار: ${info.latestVersion}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: const TextStyle(fontSize: 12 * AppTextStyles.scale, color: Colors.grey),
               ),
             ],
             if (info.releaseNotes.isNotEmpty) ...[
@@ -75,7 +76,7 @@ class UpdateRequiredDialog extends StatelessWidget {
                 ),
                 child: Text(
                   info.releaseNotes,
-                  style: const TextStyle(fontSize: 12, height: 1.5),
+                  style: const TextStyle(fontSize: 12 * AppTextStyles.scale, height: 1.5),
                 ),
               ),
             ],

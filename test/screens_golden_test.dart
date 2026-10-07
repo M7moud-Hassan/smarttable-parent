@@ -117,6 +117,7 @@ void main() {
       // نداءات مصدر البيانات مؤجَّلة 350ms، فتُستنفد المؤقّتات قبل اللقطة.
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(milliseconds: 500));
+      await _loadImages(tester);
 
       await expectLater(
         find.byType(_Harness),
@@ -131,6 +132,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
+    await _loadImages(tester);
     await expectLater(
       find.byType(_Harness),
       matchesGoldenFile('goldens/13_B4_home_tablet.png'),
@@ -172,6 +174,24 @@ class _Harness extends StatelessWidget {
       ),
     );
   }
+}
+
+/// يفكّ ترميز الصور قبل اللقطة.
+///
+/// `Image.asset` يقرأ ويفكّ الترميز قراءةً غير متزامنة، والزمن في الاختبار
+/// مُصطنع فلا تكتمل: تُلتقط اللقطة والصورة فراغ. و`pumpAndSettle` لا يُعين،
+/// لأن الانتظار ليس على مؤقّتٍ بل على عملٍ خارج حلقة الاختبار — ومن هنا
+/// `runAsync` وحدها.
+///
+/// وبدونه كانت شاشة البدء تمرّ بلقطةٍ فيها إطارٌ أبيض فارغ، فلا يكشف
+/// الاختبار أيقونةً ضاعت أو مسارًا خاطئًا، وهو أوّل ما يُفترض أن يكشفه.
+Future<void> _loadImages(WidgetTester tester) async {
+  await tester.runAsync(() async {
+    for (final element in find.byType(Image).evaluate()) {
+      await precacheImage((element.widget as Image).image, element);
+    }
+  });
+  await tester.pumpAndSettle();
 }
 
 /// يحمّل النصوص العربية في `Localization` مباشرةً.

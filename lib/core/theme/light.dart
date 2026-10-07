@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../conts/app_colors.dart';
+import '../conts/app_text_styles.dart';
 
+/// أحجام النصّ هنا تمرّ بـ`AppTextStyles.scale` كبقيّة التطبيق.
+///
+/// وهي أحجام السمة الافتراضية: كلّ `Text` بلا نمطٍ صريح يأخذ منها، فلو تُركت
+/// خارج المقياس كبر ما يصرّح بنمطه وحده وبقي ما عداه صغيرًا، فاختلّ التناسب
+/// بين نصّين متجاورين لا لشيءٍ إلا أنّ أحدهما صرّح والآخر اتّكل على السمة.
+///
 /// السمة الفاتحة — التطبيق لا يملك سمة داكنة في التصميم، وهذه هي المعتمدة.
 final ThemeData lightTheme = ThemeData(
   useMaterial3: false,
@@ -27,7 +34,7 @@ final ThemeData lightTheme = ThemeData(
     iconTheme: IconThemeData(color: AppColors.primaryDark),
     titleTextStyle: TextStyle(
       fontFamily: 'IBMPlexSansArabic',
-      fontSize: 20,
+      fontSize: 20 * AppTextStyles.scale,
       fontWeight: FontWeight.w500,
       color: AppColors.primaryDark,
     ),
@@ -41,25 +48,25 @@ final ThemeData lightTheme = ThemeData(
     isDense: true,
     contentPadding: EdgeInsets.zero,
     hintStyle: TextStyle(
-      fontSize: 12,
+      fontSize: 12 * AppTextStyles.scale,
       fontWeight: FontWeight.w400,
       color: AppColors.textPlaceholder,
     ),
   ),
   textTheme: const TextTheme(
     displaySmall:
-        TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: AppColors.text),
+        TextStyle(fontSize: 24 * AppTextStyles.scale, fontWeight: FontWeight.w600, color: AppColors.text),
     headlineSmall: TextStyle(
-        fontSize: 20, fontWeight: FontWeight.w500, color: AppColors.primaryDark),
+        fontSize: 20 * AppTextStyles.scale, fontWeight: FontWeight.w500, color: AppColors.primaryDark),
     titleLarge:
-        TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.text),
+        TextStyle(fontSize: 16 * AppTextStyles.scale, fontWeight: FontWeight.w600, color: AppColors.text),
     titleMedium:
-        TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.text),
+        TextStyle(fontSize: 14 * AppTextStyles.scale, fontWeight: FontWeight.w500, color: AppColors.text),
     titleSmall: TextStyle(
-        fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.primaryDark),
+        fontSize: 12 * AppTextStyles.scale, fontWeight: FontWeight.w500, color: AppColors.primaryDark),
     bodyMedium:
-        TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.text),
+        TextStyle(fontSize: 12 * AppTextStyles.scale, fontWeight: FontWeight.w400, color: AppColors.text),
     bodySmall:
-        TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: AppColors.textMuted),
+        TextStyle(fontSize: 10 * AppTextStyles.scale, fontWeight: FontWeight.w400, color: AppColors.textMuted),
   ),
 );

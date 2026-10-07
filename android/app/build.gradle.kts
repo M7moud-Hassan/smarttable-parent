@@ -1,8 +1,17 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
 }
 
 android {
@@ -21,21 +30,34 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "sa.smartble.smartble_parent"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            } else {
+                logger.warn(
+                    "key.properties is missing - Release build will not use the upload keystore."
+                )
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
@@ -45,19 +67,10 @@ flutter {
 }
 
 // إشعارات أندرويد: الإضافة تقرأ google-services.json وتولّد منه إعدادات
-// Firebase. وبدونها يفشل `Firebase.initializeApp` على أندرويد فلا يصدر رمز
-// جهاز — وخدمةُ الإشعارات تبتلع الخطأ عمدًا كي يفتح التطبيق، فلا يظهر العطب
-// إلا في غياب الإشعارات وحده.
-//
-// وتُطبَّق مشروطةً لا مطلقةً: تطبيقُها بلا الملفّ يُسقط كل بناء أندرويد
-// برسالة "File google-services.json is missing" — بما فيه البناء الذي يعمل
-// اليوم. فمتى وُضع الملفّ عملت الإشعارات بلا تعديل سطر، وما دام غائبًا ظلّ
-// التنبيه في سجلّ البناء.
+// Firebase. يتم تطبيق Google Services Plugin فقط إذا كان الملف موجودًا.
 if (file("google-services.json").exists()) {
     apply(plugin = "com.google.gms.google-services")
 } else {
-    // بالإنجليزية: مخرجات Gradle على ويندوز تُطبع بترميز الطرفية لا
-    // بـUTF-8، فالتنبيه العربي يظهر طلاسم — وتنبيهٌ لا يُقرأ لا يُنبّه.
     logger.warn(
         "google-services.json is missing - Android will build without push. " +
         "Download it from Firebase (project smarttable-44f51) for " +
