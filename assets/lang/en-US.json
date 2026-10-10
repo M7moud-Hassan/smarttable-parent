@@ -201,6 +201,7 @@
   "excusePending": "Under review",
   "excuseAccepted": "Excuse accepted",
   "excuseRejected": "Excuse rejected",
+  "pointsUnit": "pts",
   "notePositive": "Positive",
   "noteNeedsWork": "Needs improvement",
   "sourceAttendance": "Attendance note",

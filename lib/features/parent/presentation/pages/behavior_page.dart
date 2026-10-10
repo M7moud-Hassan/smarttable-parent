@@ -208,9 +208,29 @@ class BehaviorPage extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 10.h),
-                  Text(note.body, style: AppTextStyles.cardTitle.copyWith(height: 1.5)),
-                  SizedBox(height: 10.h),
-                  Text(note.byline, style: AppTextStyles.caption),
+                  Text(note.title,
+                      style: AppTextStyles.cardTitle.copyWith(height: 1.5)),
+                  // ما كتبه المسجِّل زيادةً على العنوان، والنقاط، ومن سجّلها:
+                  // كلٌّ منها قد يغيب عن السجلّ، فلا يُحجز له سطرٌ فارغ.
+                  if (note.body.isNotEmpty) ...[
+                    SizedBox(height: 6.h),
+                    Text(note.body,
+                        style: AppTextStyles.caption.copyWith(height: 1.5)),
+                  ],
+                  if (note.points != 0) ...[
+                    SizedBox(height: 6.h),
+                    Text(
+                      '${note.points > 0 ? '+' : ''}${note.points} ${AppText.pointsUnit}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: note.type.foreground,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                  if (note.byline.isNotEmpty) ...[
+                    SizedBox(height: 10.h),
+                    Text(note.byline, style: AppTextStyles.caption),
+                  ],
                 ],
               ),
             ),

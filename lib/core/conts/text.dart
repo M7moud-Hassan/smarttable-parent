@@ -212,6 +212,8 @@ class AppText {
 
   static String get noteType => 'noteType'.tr();
 
+  static String get pointsUnit => 'pointsUnit'.tr();
+
   static String get all => 'all'.tr();
 
   static String get subject => 'subject'.tr();

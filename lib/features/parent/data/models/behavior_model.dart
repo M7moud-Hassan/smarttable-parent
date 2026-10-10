@@ -7,40 +7,65 @@ class BehaviorNote extends Equatable {
   const BehaviorNote({
     required this.id,
     required this.type,
+    required this.title,
     required this.body,
+    required this.points,
     required this.teacher,
     required this.subject,
+    required this.session,
     required this.date,
   });
 
   final String id;
   final BehaviorNoteType type;
 
-  /// نص الملاحظة: «مشاركة متميزة في حل تمارين الوحدة».
+  /// عنوان الملاحظة في سجلّ المدرسة: «الحضور متأخر».
+  final String title;
+
+  /// ما كتبه المسجِّل زيادةً على العنوان — قد يصل فارغًا.
   final String body;
+
+  /// نقاط الملاحظة كما تحسبها المدرسة؛ صفرٌ يعني لا نقاط لها.
+  final int points;
 
   final String teacher;
   final String subject;
 
+  /// «الحصة الثالثة».
+  final String session;
+
   /// «12 رمضان».
   final String date;
 
-  /// «أ. ماجد القحطاني — الرياضيات».
-  String get byline => '$teacher — $subject';
+  /// «أ. ماجد القحطاني · الرياضيات · الحصة الثالثة» — ما توفّر منها وحده،
+  /// فلا تبقى شرطةٌ معلّقة حول قيمةٍ غائبة.
+  String get byline {
+    final parts = [teacher, subject, session].where((p) => p.isNotEmpty);
+    return parts.join(' · ');
+  }
 
-  factory BehaviorNote.fromJson(Map<String, dynamic> json) => BehaviorNote(
-        id: json['id']?.toString() ?? '',
-        body: json['body']?.toString() ?? '',
-        teacher: json['teacher']?.toString() ?? '',
-        subject: json['subject']?.toString() ?? '',
-        date: json['date']?.toString() ?? '',
-        type: json['type'] == 'positive'
-            ? BehaviorNoteType.positive
-            : BehaviorNoteType.needsWork,
-      );
+  factory BehaviorNote.fromJson(Map<String, dynamic> json) {
+    final title = json['title']?.toString() ?? '';
+    final body = json['body']?.toString() ?? '';
+    return BehaviorNote(
+      id: json['id']?.toString() ?? '',
+      // الخادم القديم لا يرسل `title`؛ حينها النصّ المعروض هو `body` وحده.
+      title: title.isNotEmpty ? title : body,
+      body: title.isNotEmpty ? body : '',
+      points: int.tryParse(json['points']?.toString() ?? '') ?? 0,
+      teacher: json['teacher']?.toString() ?? '',
+      subject: json['subject']?.toString() ?? '',
+      session: json['session']?.toString() ?? '',
+      date: json['date']?.toString() ?? '',
+      type: json['type'] == 'positive'
+          ? BehaviorNoteType.positive
+          : BehaviorNoteType.needsWork,
+    );
+  }
 
   @override
-  List<Object?> get props => [id, type, body, teacher, subject, date];
+  List<Object?> get props =>
+      [id, type, title, body, points, teacher, subject, session, date];
 }
 
 /// عمودٌ في مخطّط الأسابيع: الأسبوع وتوزيع ملاحظاته بين إيجابي وسلبي.
