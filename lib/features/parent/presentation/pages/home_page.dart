@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -30,6 +32,7 @@ import 'exams_page.dart';
 import 'excuse_page.dart';
 import 'health_page.dart';
 import 'schedule_page.dart';
+import 'stats_page.dart';
 
 /// B1 الرئيسية — وB4 نسخة التابلت، وهما الشاشة نفسها بشريط جانبي بدل السفلي
 /// وثلاثة أعمدة بدل عمودين.
@@ -43,11 +46,64 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  // البلوك حقلٌ لا يُنشأ داخل `build`: الرئيسية تعيش في `IndexedStack` فلا
+  // تُبنى من جديد عند العودة إليها. وكان هذا يعني أن ما قُرئ أول مرة يبقى
+  // معروضًا طول الجلسة — غيابٌ سجّلته المدرسة بعدها، أو موعد اختبارٍ
+  // أضافته، يصل إشعارًا وتبقى بطاقته تقول «لا غياب بدون عذر» و«لا اختبارات
+  // قادمة» حتى يُقتل التطبيق ويُفتح. شاشاتُ الخدمات لا يصيبها هذا لأنها
+  // تُدفع مساراتٍ جديدة ببلوكاتٍ جديدة، فتُظهر ما لا تُظهره بطاقتها.
+  late final HomeBloc _homeBloc = bloc<HomeBloc>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // العودة إلى تبويب الرئيسية تُعيد قراءتها، كما يفعل تبويب الإشعارات.
+    if (widget.tab == ParentTab.home && oldWidget.tab != ParentTab.home) {
+      _reload();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // ما وصل إشعارًا والتطبيق في الخلفية يكون قد غيّر العدّادات بالفعل،
+    // فتُقرأ من جديد عند العودة إليه لا عند فتحه من الصفر.
+    if (state == AppLifecycleState.resumed && widget.tab == ParentTab.home) {
+      _reload();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    // `BlocProvider.value` لا يُغلق ما لم يُنشئه، فيُغلق هنا.
+    _homeBloc.close();
+    super.dispose();
+  }
+
+  /// يطلب رئيسية الطالب المختار. تُنتظر المحاولةُ لا تغيّرُ الحالة كي يعرف
+  /// `RefreshIndicator` متى يتوقّف: الحالة لا تتغيّر حين تعود العدّادات نفسها.
+  Future<void> _reload() {
+    final selected = AppUtils.selectedStudent;
+    if (selected == null) return Future<void>.value();
+    final completer = Completer<void>();
+    _homeBloc.add(
+      GetHomeEvent(studentId: selected.id, onDone: completer.complete),
+    );
+    return completer.future;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => bloc<HomeBloc>(),
+    return BlocProvider.value(
+      value: _homeBloc,
       child: BlocListener<StudentsBloc, StudentsState>(
         // شريط الأبناء يبدّل الطالب، فتُعاد قراءة الرئيسية وحدها. بقية
         // الشاشات تقرأ الطالب المختار عند فتحها.
@@ -66,11 +122,10 @@ class _HomePageState extends State<HomePage> {
             final selected = AppUtils.selectedStudent;
 
             if (studentsState is StudentsLoadedState && selected != null) {
-              final homeBloc = context.read<HomeBloc>();
-              if (homeBloc.state is HomeInitial) {
+              if (_homeBloc.state is HomeInitial) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted && homeBloc.state is HomeInitial) {
-                    homeBloc.add(GetHomeEvent(studentId: selected.id));
+                  if (mounted && _homeBloc.state is HomeInitial) {
+                    _homeBloc.add(GetHomeEvent(studentId: selected.id));
                   }
                 });
               }
@@ -91,56 +146,66 @@ class _HomePageState extends State<HomePage> {
                     onBell: () => widget.onTab(ParentTab.notifications),
                   ),
                   bodyPadding: EdgeInsets.only(bottom: 28.h),
-                  // شريط الأبناء يبقى ظاهراً بصرف النظر عن حال الرئيسية:
-                  // فشل جلبها (مثلاً مدرسة الطالب المختار غير مشتركة) لا
-                  // يمنع وليّ الأمر من اختيار ابنٍ آخر مدرسته مشتركة.
-                  body: studentsState is StudentsFailureState
-                      ? Center(
-                          child: Text(
-                            studentsState.failure.message,
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.bodyMuted,
-                          ),
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (!Responsive.isTablet(context) &&
-                                students.length > 1)
-                              _studentSelector(context, students, selected),
-                            BlocBuilder<HomeBloc, HomeState>(
-                              builder: (context, state) {
-                                if (state is HomeLoading ||
-                                    state is HomeInitial) {
-                                  return Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(vertical: 80.h),
-                                    child: const Center(
-                                        child: CircularProgressIndicator()),
-                                  );
-                                }
-                                if (state is HomeFailureState) {
-                                  return Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(vertical: 40.h),
-                                    child: Center(
-                                      child: Text(
-                                        state.failure.message,
-                                        textAlign: TextAlign.center,
-                                        style: AppTextStyles.bodyMuted,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                if (state is! HomeLoadedState) {
-                                  return const SizedBox.shrink();
-                                }
-                                return _content(
-                                    context, state.summary, selected);
-                              },
+                  // التمرير هنا لا في `ParentScaffold`، ليُلفّ بـ
+                  // `RefreshIndicator`: سحبةٌ إلى أسفل تُعيد قراءة العدّادات
+                  // متى شكّ وليّ الأمر في أنها تأخّرت عن خبرٍ وصله.
+                  scrollable: false,
+                  body: RefreshIndicator(
+                    onRefresh: _reload,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      // شريط الأبناء يبقى ظاهراً بصرف النظر عن حال الرئيسية:
+                      // فشل جلبها (مثلاً مدرسة الطالب المختار غير مشتركة) لا
+                      // يمنع وليّ الأمر من اختيار ابنٍ آخر مدرسته مشتركة.
+                      child: studentsState is StudentsFailureState
+                          ? Center(
+                              child: Text(
+                                studentsState.failure.message,
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.bodyMuted,
+                              ),
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                if (!Responsive.isTablet(context) &&
+                                    students.length > 1)
+                                  _studentSelector(context, students, selected),
+                                BlocBuilder<HomeBloc, HomeState>(
+                                  builder: (context, state) {
+                                    if (state is HomeLoading ||
+                                        state is HomeInitial) {
+                                      return Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 80.h),
+                                        child: const Center(
+                                            child: CircularProgressIndicator()),
+                                      );
+                                    }
+                                    if (state is HomeFailureState) {
+                                      return Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 40.h),
+                                        child: Center(
+                                          child: Text(
+                                            state.failure.message,
+                                            textAlign: TextAlign.center,
+                                            style: AppTextStyles.bodyMuted,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    if (state is! HomeLoadedState) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    return _content(
+                                        context, state.summary, selected);
+                                  },
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                    ),
+                  ),
                 );
               },
             );
@@ -201,6 +266,10 @@ class _HomePageState extends State<HomePage> {
           ),
         Padding(
           padding: horizontal.copyWith(top: 22.h),
+          child: _statsCard(),
+        ),
+        Padding(
+          padding: horizontal.copyWith(top: 22.h),
           child: SectionTitle(AppText.availableServices),
         ),
         SizedBox(height: 14.h),
@@ -211,6 +280,37 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+
+  /// مدخل «إحصاءات ابني».
+  ///
+  /// بطاقةٌ عريضة لا خدمةٌ ثامنة في الشبكة: الشبكة تأتي من الخادم في عمودين،
+  /// وثامنةٌ تتركها بسبعة مربّعات فيبقى آخرها وحيداً في سطره.
+  Widget _statsCard() => AppCard(
+        onTap: () => _openPage(const StatsPage()),
+        child: Row(
+          children: [
+            const IconTile(
+              icon: AppIcons.attendance,
+              background: AppColors.primarySoft,
+              foreground: AppColors.primaryDark,
+              size: 50,
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(AppText.statsEntryTitle, style: AppTextStyles.cardTitle),
+                  SizedBox(height: 6.h),
+                  Text(AppText.statsEntrySubtitle,
+                      style: AppTextStyles.captionFaint),
+                ],
+              ),
+            ),
+            Icon(AppIcons.chevron, size: 20.sp, color: AppColors.textFaint),
+          ],
+        ),
+      );
 
   Widget _absenceCard(
       BuildContext context, AbsenceAlert alert, Student? student) {
@@ -247,8 +347,7 @@ class _HomePageState extends State<HomePage> {
                 child: SmallPillButton(
                   label:
                       '${AppText.submitExcuseCurrent}${AppText.currentPeriod}',
-                  onTap: () =>
-                      AppUtils.go(ExcusePage(periodId: alert.periodId)),
+                  onTap: () => _openPage(ExcusePage(periodId: alert.periodId)),
                 ),
               ),
               SizedBox(width: 10.w),
@@ -256,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                 label: AppText.allPeriods,
                 filled: false,
                 expand: false,
-                onTap: () => AppUtils.go(const AttendancePage()),
+                onTap: () => _openPage(const AttendancePage()),
               ),
             ],
           ),
@@ -304,22 +403,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _open(HomeService service) {
-    switch (service) {
-      case HomeService.schedule:
-        AppUtils.go(const SchedulePage());
-      case HomeService.attendance:
-        AppUtils.go(const AttendancePage());
-      case HomeService.behavior:
-        AppUtils.go(const BehaviorPage());
-      case HomeService.adminActions:
-        AppUtils.go(const AdminActionsPage());
-      case HomeService.exams:
-        AppUtils.go(const ExamsPage());
-      case HomeService.circulars:
-        AppUtils.go(const CircularsPage());
-      case HomeService.health:
-        AppUtils.go(const HealthPage());
-    }
+  void _open(HomeService service) => _openPage(switch (service) {
+        HomeService.schedule => const SchedulePage(),
+        HomeService.attendance => const AttendancePage(),
+        HomeService.behavior => const BehaviorPage(),
+        HomeService.adminActions => const AdminActionsPage(),
+        HomeService.exams => const ExamsPage(),
+        HomeService.circulars => const CircularsPage(),
+        HomeService.health => const HealthPage(),
+      });
+
+  /// يفتح شاشةً ثم يعيد قراءة الرئيسية عند العودة منها: ما يفعله وليّ الأمر
+  /// في الداخل يغيّر العدّادات — عذرٌ يُقدَّم فيسقط الغياب من «بدون عذر»،
+  /// وإجراءٌ يُردّ عليه فينقص من «الإجراءات الإدارية». ولا يكفي أن تُحدَّث
+  /// الشاشة الداخلية وحدها: البطاقة هي ما يراه بعد خروجه منها.
+  Future<void> _openPage(Widget page) async {
+    await AppUtils.goWait<void>(page);
+    if (mounted) await _reload();
   }
 }

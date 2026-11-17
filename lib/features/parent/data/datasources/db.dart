@@ -12,6 +12,7 @@ import '../models/notification_model.dart';
 import '../models/parent_model.dart';
 import '../models/schedule_model.dart';
 import '../models/school_model.dart';
+import '../models/stats_model.dart';
 import '../models/student_model.dart';
 
 /// كل ما يقرأه التطبيق أو يكتبه. حالات الاستخدام لا تعرف من أين تأتي البيانات —
@@ -53,6 +54,7 @@ abstract class Db {
   Future<Circular> Function(IdEntity) get circularDetails;
   Future<List<AdminAction>> Function(StudentEntity) get adminActions;
   Future<bool> Function(ActionResponseEntity) get respondToAction;
+  Future<StudentStats> Function(StatsFilterEntity) get stats;
 
   // ─── محتوى ثابت ──────────────────────────────────────────────────────────
   Future<SchoolInfo> Function(StudentEntity) get school;

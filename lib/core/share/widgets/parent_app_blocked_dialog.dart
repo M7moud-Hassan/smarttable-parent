@@ -1,16 +1,29 @@
 import '../../conts/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../../conts/app_text_styles.dart';
+import '../../enums/parent_app_state.dart';
 
-/// التطبيق غير مفعَّل في مدرسة الطالب — إعلاميّة بحتة وقابلة للإغلاق: لا
-/// إجراء لولي الأمر داخل التطبيق نفسه، التفعيل يتم من حساب المدرسة.
-class ParentAppInactiveDialog extends StatelessWidget {
-  const ParentAppInactiveDialog({super.key});
+/// التطبيق محجوب عن وليّ الأمر — إعلاميّة بحتة وقابلة للإغلاق: لا إجراء له
+/// داخل التطبيق نفسه في الحالتين، فالتفعيل من حساب المدرسة وتسجيل رقمه من
+/// سجلّات الطلاب.
+///
+/// النصّ والأيقونة من [ParentAppState]، لأن السبب يُغيّر ما يُطلب من وليّ
+/// الأمر: مراجعةُ الاشتراك شيء، ومراجعةُ تسجيل رقمه مع ابنه شيءٌ آخر.
+class ParentAppBlockedDialog extends StatelessWidget {
+  const ParentAppBlockedDialog({
+    super.key,
+    this.state = ParentAppState.noSubscription,
+  });
 
-  static Future<void> show(BuildContext context) {
+  final ParentAppState state;
+
+  static Future<void> show(
+    BuildContext context, {
+    ParentAppState state = ParentAppState.noSubscription,
+  }) {
     return showDialog(
       context: context,
-      builder: (_) => const ParentAppInactiveDialog(),
+      builder: (_) => ParentAppBlockedDialog(state: state),
     );
   }
 
@@ -25,24 +38,26 @@ class ParentAppInactiveDialog extends StatelessWidget {
           CircleAvatar(
             radius: 32,
             backgroundColor: AppColors.primary.withValues(alpha: .12),
-            child: const Icon(
-              Icons.lock_clock_outlined,
+            child: Icon(
+              state.icon,
               size: 34,
               color: AppColors.primary,
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'التطبيق غير مفعّل في هذه المدرسة',
+          Text(
+            state.title,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18 * AppTextStyles.scale, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+                fontSize: 18 * AppTextStyles.scale,
+                fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          const Text(
-            'يلزم أن تفعّل إدارة المدرسة الاشتراك في تطبيق ولي الأمر '
-            'حتى تتمكن من متابعة ابنك.',
+          Text(
+            state.body,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14 * AppTextStyles.scale, height: 1.5),
+            style: const TextStyle(
+                fontSize: 14 * AppTextStyles.scale, height: 1.5),
           ),
         ],
       ),

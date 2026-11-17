@@ -11,6 +11,7 @@ import 'package:smartble_parent/features/parent/data/models/notification_model.d
 import 'package:smartble_parent/features/parent/data/models/parent_model.dart';
 import 'package:smartble_parent/features/parent/data/models/schedule_model.dart';
 import 'package:smartble_parent/features/parent/data/models/school_model.dart';
+import 'package:smartble_parent/features/parent/data/models/stats_model.dart';
 import 'package:smartble_parent/features/parent/data/models/student_model.dart';
 
 /// محتوى الشاشات كما ورد حرفياً في حزمة التسليم — تجهيزةُ اختبار لا بيانات.
@@ -775,6 +776,216 @@ class DesignData {
   );
 
   /// منصات المشاركة في شاشة هـ٩ — أيقوناتها مواضع مؤقتة كما ينصّ التصميم.
+  // ─── إحصاءات الابن ────────────────────────────────────────
+
+  /// تُبنى بـ`fromJson` لا بمُنشئاتها: الخريطة هنا هي ردّ `stats/` نفسه، فإن
+  /// تغيّر شكل الردّ انكسرت التجهيزة هنا لا في شاشة وليّ الأمر.
+  static StudentStats stats(String periodKey) => StudentStats.fromJson({
+        ..._stats,
+        'period': {..._stats['period'] as Map<String, dynamic>, 'key': periodKey},
+      });
+
+  static const Map<String, dynamic> _stats = {
+        'student': {'id': 's1', 'name': 'عبدالرحمن الحربي'},
+        'period': {
+          'key': 'term',
+          'label': 'من 1447/5/1 إلى 1447/9/20',
+          'options': [
+            {'key': 'week', 'label': 'هذا الأسبوع'},
+            {'key': 'month', 'label': 'هذا الشهر'},
+            {'key': 'term', 'label': 'الفصل الدراسي'},
+          ],
+        },
+        'headline': [
+          {
+            'key': 'rate',
+            'title': 'نسبة الحضور',
+            'value': '92.1',
+            'unit': '%',
+            'tone': 'good',
+            'hint': 'من 61 يوماً مرصوداً',
+          },
+          {
+            'key': 'absent',
+            'title': 'أيام الغياب',
+            'value': '5',
+            'unit': 'أيام',
+            'tone': 'warn',
+            'hint': '3 أيام بعذر',
+          },
+          {
+            'key': 'perseverance',
+            'title': 'درجة المواظبة',
+            'value': '86',
+            'unit': 'من 100',
+            'tone': 'good',
+            'hint': 'حُسمت 14 درجة',
+          },
+          {
+            'key': 'behavior',
+            'title': 'السلوك',
+            'value': 'ممتاز',
+            'unit': '',
+            'tone': 'good',
+            'hint': '7 ملاحظات · 12 نقطة',
+          },
+        ],
+        'highlights': [
+          'أكثر أيام غيابه: الأحد (3 أيام).',
+          'أطول غياب متصل: يومان من 1447/6/3 إلى 1447/6/4.',
+          'حضوره أعلى من متوسّط فصله (88.4%).',
+        ],
+        'attendance': {
+          'present': 56,
+          'absent': 5,
+          'late': 4,
+          'permission': 1,
+          'tracked_days': 61,
+          'rate': 92.1,
+          'absence': {
+            'absent_days': 5,
+            'full_day': 3,
+            'session_days': 2,
+            'sessions': 5,
+          },
+          'lateness': {
+            'late_days': 4,
+            'morning_days': 3,
+            'session_days': 1,
+            'sessions': 2,
+          },
+          'unexcused_days': 2,
+          'excused_days': 3,
+          'longest_absence': {
+            'days': 2,
+            'from': '2025-11-30',
+            'to': '2025-12-01',
+            'from_hijri': '1447/6/3',
+            'to_hijri': '1447/6/4',
+          },
+          'by_weekday': [
+            {'day': 'الأحد', 'tracked_days': 13, 'absent': 3, 'late': 1},
+            {'day': 'الاثنين', 'tracked_days': 12, 'absent': 1, 'late': 0},
+            {'day': 'الثلاثاء', 'tracked_days': 12, 'absent': 0, 'late': 2},
+            {'day': 'الأربعاء', 'tracked_days': 12, 'absent': 1, 'late': 1},
+            {'day': 'الخميس', 'tracked_days': 12, 'absent': 0, 'late': 0},
+          ],
+          'months': [
+            {
+              'label': 'جمادى الأولى',
+              'tracked_days': 20,
+              'absent': 1,
+              'late': 1,
+              'rate': 95.0,
+            },
+            {
+              'label': 'جمادى الآخرة',
+              'tracked_days': 21,
+              'absent': 3,
+              'late': 2,
+              'rate': 85.7,
+            },
+            {
+              'label': 'رجب',
+              'tracked_days': 20,
+              'absent': 1,
+              'late': 1,
+              'rate': 95.0,
+            },
+          ],
+          'class_average_rate': 88.4,
+        },
+        'perseverance': {
+          'grade': 86,
+          'total_deducted': 14,
+          'rows': [
+            {
+              'code': 'A',
+              'label': 'غياب بدون عذر',
+              'occurrences': 2,
+              'deducted': 10,
+            },
+            {
+              'code': 'L',
+              'label': 'تأخر عن الطابور',
+              'occurrences': 3,
+              'deducted': 3,
+            },
+            {
+              'code': 'S',
+              'label': 'تأخر عن الحصة',
+              'occurrences': 1,
+              'deducted': 1,
+            },
+          ],
+          'scope': 'الفصل الدراسي الجاري',
+        },
+        'behavior': {
+          'positive': 4,
+          'negative': 3,
+          'notes': 7,
+          'records': 7,
+          'points': 12,
+          'band': 'ممتاز',
+          'band_key': 'excellent',
+          'top_notes': [
+            {
+              'title': 'التعاون مع زملائه',
+              'note_type': 'positive',
+              'points': 3,
+              'total': 2,
+            },
+            {
+              'title': 'تأخر عن الحصة',
+              'note_type': 'negative',
+              'points': -2,
+              'total': 2,
+            },
+          ],
+          'months': [
+            {'label': 'جمادى الأولى', 'positive': 2, 'negative': 1},
+            {'label': 'جمادى الآخرة', 'positive': 1, 'negative': 1},
+            {'label': 'رجب', 'positive': 1, 'negative': 1},
+          ],
+        },
+        'excuses': {
+          'total': 3,
+          'rows': [
+            {'status': 'accepted', 'label': 'مقبول', 'total': 2},
+            {'status': 'pending', 'label': 'قيد المراجعة', 'total': 1},
+          ],
+        },
+        'procedures': {
+          'total': 2,
+          'awaiting_response': 1,
+          'rows': [
+            {'type': 'call', 'label': 'استدعاء ولي أمر', 'total': 1},
+            {'type': 'notice', 'label': 'إشعار', 'total': 1},
+          ],
+        },
+        'participation': {
+          'picked': 9,
+          'rated': 7,
+          'understood_rate': 71.4,
+          'rows': [
+            {'rating': 'understood', 'label': 'فهم الدرس', 'total': 5},
+            {'rating': 'partial', 'label': 'فهم جزئي', 'total': 2},
+          ],
+        },
+        'health': {
+          'total': 1,
+          'names': ['ربو'],
+        },
+        'exams': {
+          'upcoming': 2,
+          'next': {
+            'subject': 'الرياضيات',
+            'countdown': 'بعد 3 أيام',
+            'full_date': 'الأحد 1447/7/4',
+          },
+        },
+      };
+
   static const List<String> sharePlatforms = [
     'واتساب',
     'تيليجرام',

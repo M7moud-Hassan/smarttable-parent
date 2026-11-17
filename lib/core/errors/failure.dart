@@ -34,7 +34,7 @@ class UnauthorizedFailure extends Failure {
 }
 
 /// المدرسة لم تفعّل تطبيق ولي الأمر ولا تجربته المجانية. تُعرض بحوار مخصّص
-/// (`ParentAppInactiveDialog`) لا برسالة الخادم — فرسالتها هنا عربية ثابتة،
+/// (`ParentAppBlockedDialog`) لا برسالة الخادم — فرسالتها هنا عربية ثابتة،
 /// احتياطًا فقط لو عرضتها شاشة مباشرة بدل الاستماع لذلك الحوار.
 class ParentAppInactiveFailure extends Failure {
   const ParentAppInactiveFailure()

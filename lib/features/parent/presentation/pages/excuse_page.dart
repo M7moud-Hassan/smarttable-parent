@@ -9,6 +9,7 @@ import '../../../../core/conts/dimensions.dart';
 import '../../../../core/conts/icons.dart';
 import '../../../../core/conts/text.dart';
 import '../../../../core/enums/snack_bar_type_enum.dart';
+import '../../../../core/services/app_review_service.dart';
 import '../../../../core/share/inputs/app_text_field.dart';
 import '../../../../core/share/widgets/app_card.dart';
 import '../../../../core/share/widgets/buttons.dart';
@@ -50,6 +51,9 @@ class _ExcusePageState extends State<ExcusePage> {
           if (state is ExcuseSubmittedState) {
             AppUtils.showCustomSnackbar(AppText.excuseSent, SnackType.SUCESS);
             AppUtils.back();
+            // مهمةٌ تمّت: أُرسل العذر وقبله الخادم. تُنادى بعد `back` لأن
+            // النافذة تُعرض على الشاشة المستقرّة لا على شاشة تُغلق.
+            AppReviewService.instance.requestAfterSuccess(task: 'إرسال عذر');
           } else if (state is ExcuseFailureState) {
             AppUtils.showCustomSnackbar(state.failure.message, SnackType.FAILURE);
           }

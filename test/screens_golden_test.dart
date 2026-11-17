@@ -38,6 +38,7 @@ import 'package:smartble_parent/features/parent/presentation/pages/reset_passwor
 import 'package:smartble_parent/features/parent/presentation/pages/schedule_page.dart';
 import 'package:smartble_parent/features/parent/presentation/pages/select_student_page.dart';
 import 'package:smartble_parent/features/parent/presentation/pages/share_app_page.dart';
+import 'package:smartble_parent/features/parent/presentation/pages/stats_page.dart';
 import 'package:smartble_parent/features/parent/presentation/pages/static_content_page.dart';
 import 'package:smartble_parent/features/parent/presentation/pages/support_page.dart';
 import 'package:smartble_parent/features/parent/data/datasources/db.dart';
@@ -104,6 +105,7 @@ void main() {
     '31_E8_about': const StaticContentPage.about(),
     '32_E9_share': const ShareAppPage(),
     '33_E10_delete': const DeleteAccountPage(),
+    '34_F1_stats': const StatsPage(),
   };
 
   screens.forEach((name, page) {

@@ -19,6 +19,7 @@ import '../models/notification_model.dart';
 import '../models/parent_model.dart';
 import '../models/schedule_model.dart';
 import '../models/school_model.dart';
+import '../models/stats_model.dart';
 import '../models/student_model.dart';
 import 'db.dart';
 
@@ -426,6 +427,15 @@ class DbRemote implements Db {
           },
         );
         return true;
+      };
+
+  @override
+  Future<StudentStats> Function(StatsFilterEntity) get stats => (entity) async {
+        return StudentStats.fromJson(await _object(
+          'GET',
+          'stats/',
+          query: {..._student(entity.studentId), 'period': entity.periodKey},
+        ));
       };
 
   // ─── محتوى ثابت ──────────────────────────────────────────────────────────

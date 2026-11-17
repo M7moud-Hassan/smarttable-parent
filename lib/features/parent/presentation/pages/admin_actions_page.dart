@@ -9,6 +9,7 @@ import '../../../../core/conts/icons.dart';
 import '../../../../core/conts/text.dart';
 import '../../../../core/enums/note_type.dart';
 import '../../../../core/enums/snack_bar_type_enum.dart';
+import '../../../../core/services/app_review_service.dart';
 import '../../../../core/share/widgets/app_card.dart';
 import '../../../../core/share/widgets/buttons.dart';
 import '../../../../core/share/widgets/parent_scaffold.dart';
@@ -44,6 +45,10 @@ class AdminActionsPage extends StatelessWidget {
                   : AppText.acknowledgeDone,
               SnackType.SUCESS,
             );
+            // مهمةٌ تمّت: ردَّ وليّ الأمر على إجراء إداري — أكّد الحضور أو
+            // أقرّ بالعلم — وسُجِّل ردّه عند الخادم.
+            AppReviewService.instance
+                .requestAfterSuccess(task: 'الردّ على إجراء إداري');
           } else if (state is ActionsFailureState) {
             AppUtils.showCustomSnackbar(
                 state.failure.message, SnackType.FAILURE);

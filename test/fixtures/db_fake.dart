@@ -16,6 +16,7 @@ import 'package:smartble_parent/features/parent/data/models/notification_model.d
 import 'package:smartble_parent/features/parent/data/models/parent_model.dart';
 import 'package:smartble_parent/features/parent/data/models/schedule_model.dart';
 import 'package:smartble_parent/features/parent/data/models/school_model.dart';
+import 'package:smartble_parent/features/parent/data/models/stats_model.dart';
 import 'package:smartble_parent/features/parent/data/models/student_model.dart';
 import 'package:smartble_parent/features/parent/data/datasources/db.dart';
 import 'design_data.dart';
@@ -264,6 +265,10 @@ class DbFake implements Db {
             return _delayed(DesignData.terms);
         }
       };
+
+  @override
+  Future<StudentStats> Function(StatsFilterEntity) get stats =>
+      (entity) => _delayed(DesignData.stats(entity.periodKey));
 
   void _ensurePhone(String phone) {
     final digits = AppUtils.convertToWesternNumerals(phone).replaceAll(RegExp(r'\D'), '');

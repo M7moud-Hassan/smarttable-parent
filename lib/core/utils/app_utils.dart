@@ -8,6 +8,7 @@ import '../../features/parent/data/models/parent_model.dart';
 import '../../features/parent/data/models/student_model.dart';
 import '../../features/parent/domain/entities/login_entity.dart';
 import '../enums/snack_bar_type_enum.dart';
+import '../services/app_review_service.dart';
 
 /// الواجهة التي تمرّ منها حالة التطبيق العامّة: المستخدم، اللغة، الطالب
 /// المختار، والسجل. تنفيذها في `AppUtilsImp`.
@@ -105,6 +106,11 @@ abstract class AppUtils {
   static String latestMessage = '';
 
   static void showCustomSnackbar(String message, SnackType type, {String title = ''}) {
+    // قبل حاجز التكرار لا بعده: الفشل المتكرّر فشلٌ في كل مرة، وإن عُرضت
+    // رسالته واحدة. وبهذا السطر تسكُت نافذة التقييم دقائق بعد أي عطل يراه
+    // المستخدم، بلا حاجة إلى تذكُّر ذلك في كل شاشة.
+    if (type == SnackType.FAILURE) AppReviewService.instance.noteFailure();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // نفس الرسالة مرتين متتاليتين تُعرض مرة واحدة، وإلا تراكمت الإشعارات
       // على الشاشة عند تكرار الفشل.

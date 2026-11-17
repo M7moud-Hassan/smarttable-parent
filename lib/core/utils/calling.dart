@@ -5,7 +5,7 @@ import 'package:logger/logger.dart' show Level;
 
 import '../errors/exceptions.dart';
 import '../errors/failure.dart';
-import '../share/widgets/parent_app_inactive_dialog.dart';
+import '../share/widgets/parent_app_blocked_dialog.dart';
 import 'app_utils.dart';
 
 /// نقطة واحدة يمرّ منها كل نداء بيانات، فيتحوّل كل استثناء إلى `Left` بدل أن
@@ -20,7 +20,7 @@ class Calling {
       // بدل أن تكرّره كل شاشة على حدة — ويُتجنَّب تكديسه إن فشلت عدّة نداءات
       // معًا (كما في الرئيسية التي تطلب أكثر من مورد دفعة واحدة).
       if (failure is ParentAppInactiveFailure && Get.isDialogOpen != true) {
-        Get.dialog(const ParentAppInactiveDialog());
+        Get.dialog(const ParentAppBlockedDialog());
       }
       return Left<Failure, T>(failure);
     } on DioException catch (e) {

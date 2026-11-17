@@ -174,3 +174,24 @@ class StaticPageEntity extends BaseEntity {
   @override
   Map<String, dynamic> toJson() => {'kind': kind.name};
 }
+
+/// مدى شاشة الإحصاءات (شاشة «إحصاءات ابني»).
+///
+/// المفتاح نصٌّ لا `enum`: خيارات المدى تصل من الخادم مع الردّ، فلو عُدّت هنا
+/// لوجب تعديل التطبيق كلّما أضافت المدرسة مدى. والشاشة تعرض لافتة الخادم
+/// وترسل مفتاحه كما هو.
+class StatsFilterEntity extends BaseEntity {
+  const StatsFilterEntity({required this.studentId, this.periodKey = 'term'});
+
+  final String studentId;
+  final String periodKey;
+
+  StatsFilterEntity copyWith({String? periodKey}) =>
+      StatsFilterEntity(studentId: studentId, periodKey: periodKey ?? this.periodKey);
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'student_id': studentId,
+        'period': periodKey,
+      };
+}

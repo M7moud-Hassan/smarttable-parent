@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../../core/enums/parent_app_state.dart';
 import '../../../../core/utils/phone_format.dart';
 
 /// ولي الأمر — البيانات التي تظهر في الترويسة وشاشتي «حسابي» و«البيانات
@@ -15,7 +16,7 @@ class ParentUser extends Equatable {
     this.workplace = '',
     this.avatar,
     this.schoolName = '',
-    this.parentAppActive = true,
+    this.parentAppState = ParentAppState.ok,
   });
 
   final String id;
@@ -35,9 +36,13 @@ class ParentUser extends Equatable {
   /// اسم مدرسة الطالب المختار — يظهر تحت التحية في الرئيسية.
   final String schoolName;
 
-  /// مفعَّلٌ إن كانت مدرسة الطالب مشتركة في تطبيق ولي الأمر — تطبيقه هو، أو
-  /// المتابع الإداري، أو الجدول الذكي الأساسي، أيٌّ منها يكفي.
-  final bool parentAppActive;
+  /// أيفتح التطبيق؟ وإن لم يفتح فلماذا — لا اشتراك للمدرسة، أم لا أبناء
+  /// مرتبطين بالرقم. والاشتراك المطلوب هو **تطبيق ولي الأمر نفسه** (أو تجربته
+  /// المجانية)؛ لا يكفي عنه اشتراك المتابع الإداري ولا الجدول الذكي الأساسي.
+  final ParentAppState parentAppState;
+
+  /// يُفتح التطبيق إن كان لولي الأمر ابنٌ واحد في مدرسةٍ مشتركة.
+  bool get parentAppActive => parentAppState.isOpen;
 
   /// الرقم بصيغة العرض في شاشة «حسابي»: `+966 55 123 4567`.
   String get displayPhone => PhoneFormat.display(phone);
@@ -54,7 +59,7 @@ class ParentUser extends Equatable {
     String? workplace,
     String? avatar,
     String? schoolName,
-    bool? parentAppActive,
+    ParentAppState? parentAppState,
   }) =>
       ParentUser(
         id: id,
@@ -66,7 +71,7 @@ class ParentUser extends Equatable {
         workplace: workplace ?? this.workplace,
         avatar: avatar ?? this.avatar,
         schoolName: schoolName ?? this.schoolName,
-        parentAppActive: parentAppActive ?? this.parentAppActive,
+        parentAppState: parentAppState ?? this.parentAppState,
       );
 
   factory ParentUser.fromJson(Map<String, dynamic> json) => ParentUser(
@@ -79,7 +84,10 @@ class ParentUser extends Equatable {
         workplace: json['workplace']?.toString() ?? '',
         avatar: json['avatar']?.toString(),
         schoolName: json['school_name']?.toString() ?? '',
-        parentAppActive: json['parent_app_active'] as bool? ?? true,
+        parentAppState: ParentAppState.fromJson(
+          json['parent_app_state'],
+          active: json['parent_app_active'] as bool? ?? true,
+        ),
       );
 
   Map<String, dynamic> toJson() => {
@@ -92,7 +100,10 @@ class ParentUser extends Equatable {
         'workplace': workplace,
         'avatar': avatar,
         'school_name': schoolName,
+        // الحقلان معًا: `parent_app_state` هو المقروء، و`parent_app_active`
+        // يبقى ليصحّ قراءة المخزون لو عاد المستخدم إلى نسخة تطبيقٍ أقدم.
         'parent_app_active': parentAppActive,
+        'parent_app_state': parentAppState.wire,
       };
 
   @override
@@ -106,6 +117,6 @@ class ParentUser extends Equatable {
         workplace,
         avatar,
         schoolName,
-        parentAppActive,
+        parentAppState,
       ];
 }

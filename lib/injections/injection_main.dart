@@ -34,6 +34,7 @@ import '../features/parent/domain/usecases/get_notifications_use_case.dart';
 import '../features/parent/domain/usecases/get_schedule_use_case.dart';
 import '../features/parent/domain/usecases/get_school_use_case.dart';
 import '../features/parent/domain/usecases/get_static_page_use_case.dart';
+import '../features/parent/domain/usecases/get_stats_use_case.dart';
 import '../features/parent/domain/usecases/get_students_use_case.dart';
 import '../features/parent/domain/usecases/get_support_use_case.dart';
 import '../features/parent/domain/usecases/login_use_case.dart';
@@ -60,6 +61,7 @@ import '../features/parent/presentation/bloc/notifications/notifications_bloc.da
 import '../features/parent/presentation/bloc/profile/profile_bloc.dart';
 import '../features/parent/presentation/bloc/schedule/schedule_bloc.dart';
 import '../features/parent/presentation/bloc/settings/settings_bloc.dart';
+import '../features/parent/presentation/bloc/stats/stats_bloc.dart';
 import '../features/parent/presentation/bloc/students/students_bloc.dart';
 
 final sl = AppUtils.sl;
@@ -116,6 +118,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetAbsencePeriodUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => SubmitExcuseUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => GetBehaviorUseCase(repo: sl(), db: sl()));
+  sl.registerLazySingleton(() => GetStatsUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => GetHealthUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => SaveHealthUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => GetExamsUseCase(repo: sl(), db: sl()));
@@ -155,6 +158,7 @@ Future<void> init() async {
         submitExcuseUseCase: sl(),
       ));
   sl.registerFactory(() => BehaviorBloc(getBehaviorUseCase: sl()));
+  sl.registerFactory(() => StatsBloc(getStatsUseCase: sl()));
   sl.registerFactory(() => HealthBloc(
         getHealthUseCase: sl(),
         saveHealthUseCase: sl(),

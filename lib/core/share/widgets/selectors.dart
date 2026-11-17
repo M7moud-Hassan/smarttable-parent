@@ -59,9 +59,16 @@ class ChoicePill extends StatelessWidget {
           // داخل `Expanded`. أما `alignment` على `Container` فيمدّها دائماً.
           child: Center(
             widthFactor: 1,
-            child: Text(
-              label,
-              style: AppTextStyles.smallButton.copyWith(color: foreground),
+            // داخل `Expanded` يضيق العرض عن لافتةٍ كـ«الفصل الدراسي»، فتنكسر
+            // على سطرين ويُقصّ ثانيهما بارتفاع الشريحة. و`scaleDown` يصغّر
+            // عند الضيق وحده: في `Wrap` تلتفّ الشريحة حول نصّها فلا يصغر.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                maxLines: 1,
+                style: AppTextStyles.smallButton.copyWith(color: foreground),
+              ),
             ),
           ),
         ),

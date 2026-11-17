@@ -403,4 +403,53 @@ class AppText {
   static String get startupFailed => 'startupFailed'.tr();
 
   static String get selectStudentFirst => 'selectStudentFirst'.tr();
+
+  // ─── إحصاءات الابن ─────────────────────────────────────────────────────
+  static String get notePositive => 'notePositive'.tr();
+  static String get noteNeedsWork => 'noteNeedsWork'.tr();
+  static String get statsTitle => 'statsTitle'.tr();
+  static String get statsEntryTitle => 'statsEntryTitle'.tr();
+  static String get statsEntrySubtitle => 'statsEntrySubtitle'.tr();
+  static String get statsAttendance => 'statsAttendance'.tr();
+  static String get statsRate => 'statsRate'.tr();
+  static String get statsClassAverage => 'statsClassAverage'.tr();
+  static String get statsPresent => 'statsPresent'.tr();
+  static String get statsAbsent => 'statsAbsent'.tr();
+  static String get statsLate => 'statsLate'.tr();
+  static String get statsPermission => 'statsPermission'.tr();
+  static String get statsFullDay => 'statsFullDay'.tr();
+  static String get statsSessionDays => 'statsSessionDays'.tr();
+  static String get statsSessionsUnit => 'statsSessionsUnit'.tr();
+  static String get statsMorning => 'statsMorning'.tr();
+  static String get statsExcused => 'statsExcused'.tr();
+  static String get statsUnexcused => 'statsUnexcused'.tr();
+  static String get statsLongestAbsence => 'statsLongestAbsence'.tr();
+  static String get statsByWeekday => 'statsByWeekday'.tr();
+  static String get statsByMonth => 'statsByMonth'.tr();
+  static String get statsPerseverance => 'statsPerseverance'.tr();
+  static String get statsDeductions => 'statsDeductions'.tr();
+  static String get statsNoDeductions => 'statsNoDeductions'.tr();
+  static String get statsBehavior => 'statsBehavior'.tr();
+  static String get statsBehaviorPoints => 'statsBehaviorPoints'.tr();
+  static String get statsTopNotes => 'statsTopNotes'.tr();
+  static String get statsBehaviorByMonth => 'statsBehaviorByMonth'.tr();
+  static String get statsNoNotes => 'statsNoNotes'.tr();
+  static String get statsParticipation => 'statsParticipation'.tr();
+  static String get statsPicked => 'statsPicked'.tr();
+  static String get statsRated => 'statsRated'.tr();
+  static String get statsUnderstood => 'statsUnderstood'.tr();
+  static String get statsNoParticipation => 'statsNoParticipation'.tr();
+  static String get statsExcuses => 'statsExcuses'.tr();
+  static String get statsNoExcuses => 'statsNoExcuses'.tr();
+  static String get statsProcedures => 'statsProcedures'.tr();
+  static String get statsNoProcedures => 'statsNoProcedures'.tr();
+  static String get statsAwaitingResponse => 'statsAwaitingResponse'.tr();
+  static String get statsHealth => 'statsHealth'.tr();
+  static String get statsNoHealth => 'statsNoHealth'.tr();
+  static String get statsExams => 'statsExams'.tr();
+  static String get statsNoExams => 'statsNoExams'.tr();
+  static String get statsOneDay => 'statsOneDay'.tr();
+  static String get statsTwoDays => 'statsTwoDays'.tr();
+  static String get statsFewDays => 'statsFewDays'.tr();
+  static String get statsManyDays => 'statsManyDays'.tr();
 }

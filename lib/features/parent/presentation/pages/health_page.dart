@@ -9,6 +9,7 @@ import '../../../../core/conts/dimensions.dart';
 import '../../../../core/conts/icons.dart';
 import '../../../../core/conts/text.dart';
 import '../../../../core/enums/snack_bar_type_enum.dart';
+import '../../../../core/services/app_review_service.dart';
 import '../../../../core/share/inputs/app_text_field.dart';
 import '../../../../core/share/widgets/app_card.dart';
 import '../../../../core/share/widgets/buttons.dart';
@@ -50,6 +51,10 @@ class _HealthPageState extends State<HealthPage> {
         listener: (context, state) {
           if (state is HealthSavedState) {
             AppUtils.showCustomSnackbar(AppText.healthSaved, SnackType.SUCESS);
+            // مهمةٌ تمّت: حُفظت الحالة الصحية وأكّدها الخادم. وبقيّة الشروط
+            // في `AppReviewService`، فلا تُقرأ هنا.
+            AppReviewService.instance
+                .requestAfterSuccess(task: 'حفظ الحالة الصحية');
           } else if (state is HealthFailureState) {
             AppUtils.showCustomSnackbar(state.failure.message, SnackType.FAILURE);
           } else if (state is HealthFormState && !_instructionsLoaded) {

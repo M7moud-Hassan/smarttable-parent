@@ -13,6 +13,7 @@ import 'package:logger/logger.dart' show Level;
 import 'core/conts/app_colors.dart';
 import 'core/conts/app_constants.dart';
 import 'core/conts/dimensions.dart';
+import 'core/services/app_review_service.dart';
 import 'core/services/push_notifications_service.dart';
 import 'core/share/widgets/startup_error_screen.dart';
 import 'core/theme/theme_app.dart';
@@ -30,6 +31,7 @@ const _bootTimeout = Duration(seconds: 20);
 
 void main() => runZonedGuarded(_bootstrap, (error, stack) {
       AppUtils.log('خطأ غير ملتقط: $error\n$stack', levelLog: Level.error);
+      AppReviewService.instance.noteFailure();
     });
 
 Future<void> _bootstrap() async {
@@ -60,6 +62,9 @@ Future<void> _bootstrap() async {
     // لا تُنتظر: تهيئة Firebase وطلب الإذن نداءان قد يطولان، وحبسُ الإقلاع
     // عليهما يترك الشاشة بيضاء. والخدمة لا ترمي، فتعطّلها لا يمنع الفتح.
     unawaited(PushNotificationsService.instance.init());
+    // عدّاد أيام الفتح ومراقبة حال التطبيق. لا يُنتظر ولا يرمي: قراءة
+    // التخزين فيه تجري في الخلفية.
+    AppReviewService.instance.attach();
   } catch (e, s) {
     bootError = e;
     AppUtils.log('تعذّرت تهيئة التطبيق: $e\n$s', levelLog: Level.error);
@@ -87,10 +92,14 @@ void _installErrorHandlers() {
   FlutterError.onError = (details) {
     previous?.call(details);
     AppUtils.log('خطأ واجهة: ${details.exception}', levelLog: Level.error);
+    // خطأ بناء ودجة يعني في النسخة المنشورة مستطيلًا رماديًّا مكان الشاشة.
+    // من رأى ذلك لا تُعرض عليه نافذة التقييم بعد دقائق.
+    AppReviewService.instance.noteFailure();
   };
   // خطأ غير متزامن خارج شجرة الودجات: يُسجَّل ولا يُسقط التطبيق.
   ui.PlatformDispatcher.instance.onError = (error, stack) {
     AppUtils.log('خطأ غير متزامن: $error\n$stack', levelLog: Level.error);
+    AppReviewService.instance.noteFailure();
     return true;
   };
 }

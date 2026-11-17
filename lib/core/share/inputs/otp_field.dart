@@ -8,8 +8,15 @@ import '../../conts/dimensions.dart';
 
 /// أربع خانات لرمز التحقق (شاشة A5)، 60×64 لكل خانة بفراغ 12.
 ///
-/// الخانات مرتّبة من اليمين إلى اليسار مثل بقية الواجهة، والتركيز ينتقل
-/// تلقائياً إلى التالية عند الكتابة وإلى السابقة عند المسح.
+/// الخانات مرتّبة من اليسار إلى اليمين وإن كانت الواجهة عربية، لأن الرقم
+/// يُقرأ من اليسار دائماً: الرمز `5831` يصل في الرسالة بهذا الترتيب، فلو
+/// رُتّبت الخانات باتجاه الواجهة لظهر مقلوباً ولبدأ وليّ الأمر الكتابة في
+/// الخانة الأخيرة فيتوقّف عندها.
+///
+/// والتركيز ينتقل تلقائياً إلى التالية عند الكتابة وإلى السابقة عند المسح،
+/// والنقر على خانةٍ فارغة يُحوَّل إلى أوّل فارغة: رسالة الرمز تُرشد من على
+/// الإصدار القديم أن يبدأ بالخانة اليمنى، فلولا التحويل لوقع أوّل رقمٍ هنا في
+/// آخر خانةٍ ووقف المستخدم.
 class OtpField extends StatefulWidget {
   const OtpField({super.key, this.length = 4, required this.onChanged});
 
@@ -46,16 +53,39 @@ class _OtpFieldState extends State<OtpField> {
     setState(() {});
   }
 
+  /// أوّل خانةٍ فارغة، أو `null` إن امتلأت كلّها.
+  int? _firstEmpty() {
+    for (var i = 0; i < widget.length; i++) {
+      if (_controllers[i].text.isEmpty) return i;
+    }
+    return null;
+  }
+
+  /// النقر على فارغةٍ نيّةُ كتابة، فيُصرف إلى أوّل فارغة كي لا تنشأ ثغرة.
+  ///
+  /// والنقر على خانةٍ مكتوبة يُترك كما هو: ذاك تصحيحُ رقمٍ بعينه، وصرفُه
+  /// يمنع المستخدم من إصلاح ما كتبه.
+  void _onTap(int index) {
+    if (_controllers[index].text.isNotEmpty) return;
+    final first = _firstEmpty();
+    if (first != null && first != index) _nodes[first].requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < widget.length; i++) ...[
-          if (i > 0) SizedBox(width: 12.w),
-          _box(i),
+    // الاتجاه مفروضٌ هنا ولا يُورَث من الواجهة: `Row` في وضع RTL يضع الخانة
+    // الأولى على اليمين، فيُقرأ الرمز مقلوباً وتُكتب خاناته من آخرها.
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          for (var i = 0; i < widget.length; i++) ...[
+            if (i > 0) SizedBox(width: 12.w),
+            _box(i),
+          ],
         ],
-      ],
+      ),
     );
   }
 
@@ -90,6 +120,7 @@ class _OtpFieldState extends State<OtpField> {
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
         ),
+        onTap: () => _onTap(index),
         onChanged: (value) => _onChanged(index, value),
       ),
     );
