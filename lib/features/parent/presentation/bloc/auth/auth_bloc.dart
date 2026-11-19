@@ -7,11 +7,13 @@ import '../../../../../core/utils/app_utils.dart';
 import '../../../data/models/parent_model.dart';
 import '../../../domain/entities/auth_entities.dart';
 import '../../../domain/usecases/change_password_use_case.dart';
+import '../../../domain/usecases/change_phone_use_case.dart';
 import '../../../domain/usecases/create_account_use_case.dart';
 import '../../../domain/usecases/delete_account_use_case.dart';
 import '../../../domain/usecases/forgot_password_use_case.dart';
 import '../../../domain/usecases/login_use_case.dart';
 import '../../../domain/usecases/request_otp_use_case.dart';
+import '../../../domain/usecases/request_phone_change_use_case.dart';
 import '../../../domain/usecases/reset_password_use_case.dart';
 import '../../../domain/usecases/verify_otp_use_case.dart';
 
@@ -29,6 +31,8 @@ class AuthBloc extends BaseBloc<AuthEvent, AuthState> {
     required this.forgotPasswordUseCase,
     required this.resetPasswordUseCase,
     required this.changePasswordUseCase,
+    required this.requestPhoneChangeUseCase,
+    required this.changePhoneUseCase,
     required this.deleteAccountUseCase,
   }) : super(AuthInitial()) {
     on<AuthEvent>((event, emit) async {
@@ -63,6 +67,23 @@ class AuthBloc extends BaseBloc<AuthEvent, AuthState> {
         emit(AuthLoading());
         result = await changePasswordUseCase(event.entity);
         _settle(emit, (_) => PasswordChangedState());
+      } else if (event is RequestPhoneChangeEvent) {
+        emit(AuthLoading());
+        result = await requestPhoneChangeUseCase(event.entity);
+        _settle(emit, (value) => PhoneChangeCodeSentState(phone: value as String));
+      } else if (event is ChangePhoneEvent) {
+        emit(AuthLoading());
+        result = await changePhoneUseCase(event.entity);
+        await result.fold(
+          (failure) async => emit(AuthFailureState(failure: failure)),
+          (value) async {
+            final user = value as ParentUser;
+            // الرقم معرّف الحساب: حفظُه محلّيًّا هنا يمنع بقاء الرقم القديم
+            // في «حسابي» حتى إقلاعٍ تالٍ.
+            await AppUtils.instance.setUser(user);
+            emit(PhoneChangedState(user: user));
+          },
+        );
       } else if (event is DeleteAccountEvent) {
         emit(AuthLoading());
         result = await deleteAccountUseCase();
@@ -81,6 +102,8 @@ class AuthBloc extends BaseBloc<AuthEvent, AuthState> {
   final ForgotPasswordUseCase forgotPasswordUseCase;
   final ResetPasswordUseCase resetPasswordUseCase;
   final ChangePasswordUseCase changePasswordUseCase;
+  final RequestPhoneChangeUseCase requestPhoneChangeUseCase;
+  final ChangePhoneUseCase changePhoneUseCase;
   final DeleteAccountUseCase deleteAccountUseCase;
 
   /// الدخول وإنشاء الحساب ينتهيان إلى الشيء نفسه: حفظ المستخدم وبيانات

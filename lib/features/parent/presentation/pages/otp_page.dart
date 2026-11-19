@@ -17,6 +17,21 @@ import '../bloc/auth/auth_bloc.dart';
 import 'create_account_page.dart';
 import 'reset_password_page.dart';
 
+/// ما الذي يثبّته الرمز.
+///
+/// نوعٌ معدود لا رايةٌ بوليّة: المسارات صارت ثلاثة، و`forReset` الثانية
+/// كانت تعني أربع حالاتٍ اثنتان منها لا معنى لها.
+enum OtpPurpose {
+  /// التسجيل لأول مرة — ينتهي إلى إنشاء الحساب.
+  register,
+
+  /// استعادة كلمة المرور — ينتهي إلى تحديثها.
+  resetPassword,
+
+  /// تغيير رقم الجوال من البيانات الشخصية — ينتهي إلى تثبيت الرقم الجديد.
+  changePhone,
+}
+
 /// A5 رمز التحقق — أربع خانات، ثم إنشاء الحساب أو تحديث كلمة المرور.
 ///
 /// الشاشة واحدة في المسارين: التصميم يرسمها مرة، والرمز يثبت ملكية الرقم في
@@ -26,14 +41,14 @@ class OtpPage extends StatefulWidget {
   const OtpPage({
     super.key,
     required this.phone,
-    this.forReset = false,
+    this.purpose = OtpPurpose.register,
     this.studentsCount = 0,
   });
 
   final String phone;
 
-  /// مسار استعادة كلمة المرور بدل مسار التسجيل.
-  final bool forReset;
+  /// ما ينتظر خلف الرمز.
+  final OtpPurpose purpose;
 
   /// عدد الأبناء الذين وجدهم الخادم للرقم — يُمرَّر إلى شاشة إنشاء الحساب.
   final int studentsCount;
@@ -45,21 +60,46 @@ class OtpPage extends StatefulWidget {
 class _OtpPageState extends State<OtpPage> {
   String _code = '';
 
+  /// أوّلُ إرسالٍ في مسار تغيير الرقم تلقائيّ، فلا تصحّ عليه رسالة «أُعيد
+  /// إرسال الرمز» — وهي تصحّ على كل ما بعده.
+  bool _awaitingFirstCode = false;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => bloc<AuthBloc>(),
+      create: (_) {
+        final auth = bloc<AuthBloc>();
+        // المساران الآخران وصلا وقد أُرسل رمزهما من الشاشة السابقة؛ وتغييرُ
+        // الرقم يبدأ هنا، فلولا هذا السطر انتظر وليّ الأمر رمزًا لا يأتي.
+        if (widget.purpose == OtpPurpose.changePhone) {
+          _awaitingFirstCode = true;
+          auth.add(RequestPhoneChangeEvent(
+              entity: PhoneEntity(phone: widget.phone)));
+        }
+        return auth;
+      },
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is OtpVerifiedState) {
-            AppUtils.go(widget.forReset
+            AppUtils.go(widget.purpose == OtpPurpose.resetPassword
                 ? ResetPasswordPage(token: _code)
                 : CreateAccountPage(
                     phone: state.phone,
                     studentsCount: widget.studentsCount,
                   ));
+          } else if (state is PhoneChangedState) {
+            AppUtils.showCustomSnackbar(AppText.phoneUpdated, SnackType.SUCESS);
+            // `true` تُعلم شاشة البيانات الشخصية أن الرقم ثبت، فتتابع حفظ
+            // بقية الحقول بدل أن تطلب رمزًا ثانيًا على الرقم نفسه.
+            AppUtils.back<bool>(true);
           } else if (state is OtpRequestedState) {
-            AppUtils.showCustomSnackbar('أُعيد إرسال الرمز.', SnackType.SUCESS);
+            AppUtils.showCustomSnackbar(AppText.otpResent, SnackType.SUCESS);
+          } else if (state is PhoneChangeCodeSentState) {
+            if (_awaitingFirstCode) {
+              _awaitingFirstCode = false;
+            } else {
+              AppUtils.showCustomSnackbar(AppText.otpResent, SnackType.SUCESS);
+            }
           } else if (state is AuthFailureState) {
             AppUtils.showCustomSnackbar(state.failure.message, SnackType.FAILURE);
           }
@@ -92,9 +132,15 @@ class _OtpPageState extends State<OtpPage> {
                   label: AppText.verify,
                   enabled: _code.length == 4 && state is! AuthLoading,
                   onTap: () => context.read<AuthBloc>().add(
-                        VerifyOtpEvent(
-                          entity: OtpEntity(phone: widget.phone, code: _code),
-                        ),
+                        widget.purpose == OtpPurpose.changePhone
+                            ? ChangePhoneEvent(
+                                entity: OtpEntity(
+                                    phone: widget.phone, code: _code),
+                              )
+                            : VerifyOtpEvent(
+                                entity: OtpEntity(
+                                    phone: widget.phone, code: _code),
+                              ),
                       ),
                 ),
                 SizedBox(height: 18.h),
@@ -116,7 +162,11 @@ class _OtpPageState extends State<OtpPage> {
               alignment: PlaceholderAlignment.middle,
               child: GestureDetector(
                 onTap: () => context.read<AuthBloc>().add(
-                      RequestOtpEvent(entity: PhoneEntity(phone: widget.phone)),
+                      widget.purpose == OtpPurpose.changePhone
+                          ? RequestPhoneChangeEvent(
+                              entity: PhoneEntity(phone: widget.phone))
+                          : RequestOtpEvent(
+                              entity: PhoneEntity(phone: widget.phone)),
                     ),
                 child: Text(
                   AppText.resend,

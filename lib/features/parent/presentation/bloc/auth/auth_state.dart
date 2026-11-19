@@ -60,6 +60,26 @@ final class ResetLinkSentState extends AuthState {
   List<Object?> get props => [phone];
 }
 
+/// رمزُ تغيير الرقم أُرسل إلى الرقم الجديد — بصيغته كما يعرضها الخادم.
+final class PhoneChangeCodeSentState extends AuthState {
+  const PhoneChangeCodeSentState({required this.phone});
+
+  final String phone;
+
+  @override
+  List<Object?> get props => [phone, DateTime.now().microsecondsSinceEpoch];
+}
+
+/// الرقم تغيّر على الخادم وأُعيد ربط الأبناء به.
+final class PhoneChangedState extends AuthState {
+  const PhoneChangedState({required this.user});
+
+  final ParentUser user;
+
+  @override
+  List<Object?> get props => [user, DateTime.now().microsecondsSinceEpoch];
+}
+
 final class PasswordResetState extends AuthState {}
 
 final class PasswordChangedState extends AuthState {}

@@ -6,15 +6,16 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/conts/app_colors.dart';
 import '../../../../core/conts/app_text_styles.dart';
-import '../../../../core/conts/icons.dart';
 import '../../../../core/conts/text.dart';
 import '../../../../core/enums/snack_bar_type_enum.dart';
 import '../../../../core/share/inputs/app_text_field.dart';
+import '../../../../core/share/inputs/phone_field.dart';
 import '../../../../core/share/widgets/app_card.dart';
 import '../../../../core/share/widgets/buttons.dart';
 import '../../../../core/share/widgets/parent_avatar.dart';
 import '../../../../core/share/widgets/parent_scaffold.dart';
 import '../../../../core/utils/app_utils.dart';
+import '../../../../core/utils/countries.dart';
 import '../../../../injections/injection_main.dart';
 import '../../data/models/parent_model.dart';
 import '../../domain/entities/service_entities.dart';
@@ -36,6 +37,10 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
   final _email = TextEditingController();
   final _workplace = TextEditingController();
   final _phone = TextEditingController();
+
+  /// دولةُ الرقم المعروض — تُستنتج من الرقم القادم من الخادم لا تُفترض
+  /// سعوديةً دائمًا، وإلا ظهر رقمُ وليّ الأمر البحرينيّ تحت مفتاح `966+`.
+  Country _country = kDefaultCountry;
 
   /// الحقول تُملأ مرة واحدة من الخادم؛ ملؤها في كل بناء يقفز بالمؤشّر إلى
   /// أول الحقل مع كل حرف.
@@ -61,8 +66,15 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
     _nationalId.text = user.nationalId;
     _email.text = user.email;
     _workplace.text = user.workplace;
-    _phone.text = user.phone;
-    _originalPhone = user.phone;
+    // الرقم يصل من الخادم محلّيًّا (`05…`) للسعوديّ ودوليًّا لغيره، فيُفكَّك
+    // إلى مفتاحٍ ورقمٍ محلّيّ ليملأ الحقلين معًا.
+    final parsed = parsePhone(user.phone);
+    _country = parsed.country;
+    _phone.text = parsed.national;
+    // المقارنة لاحقًا بصيغة E.164 على الطرفين: مقارنةُ نصِّ الحقل بالرقم
+    // القادم من الخادم كانت تختلف دائمًا بعد التفكيك، فتُطلب رسالةُ تحقّقٍ
+    // على رقمٍ لم يتغيّر.
+    _originalPhone = parsed.national.isEmpty ? '' : parsed.e164;
   }
 
   @override
@@ -104,14 +116,17 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
                 _field(AppText.email, _email,
                     keyboardType: TextInputType.emailAddress),
                 _field(AppText.workplace, _workplace),
-                _field(
-                  AppText.phoneNumber,
-                  _phone,
-                  icon: AppIcons.phone,
-                  keyboardType: TextInputType.phone,
-                  formatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FieldLabel(AppText.phoneNumber),
+                    SizedBox(height: 10.h),
+                    PhoneField(
+                      controller: _phone,
+                      country: _country,
+                      onCountryChanged: (c) => setState(() => _country = c),
+                    ),
+                    SizedBox(height: 18.h),
                   ],
                 ),
                 SizedBox(height: 12.h),
@@ -178,12 +193,24 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
         ],
       );
 
-  void _save(BuildContext context) {
-    // الرقم الجديد لا يُحفظ قبل التحقق منه، وإلا فقد ولي الأمر معرّفه لدى
-    // المدرسة بخطأ مطبعي.
-    if (_phone.text.trim() != _originalPhone) {
-      AppUtils.go(OtpPage(phone: _phone.text.trim()));
+  Future<void> _save(BuildContext context) async {
+    // رقمٌ ناقصٌ يُردّ هنا بسببه: إرساله كان يَحفظ معرّفًا لا يصل إليه رمزُ
+    // تحقّق، فيَخرج وليّ الأمر من حسابه ولا يعود.
+    final issue = _country.validate(_phone.text);
+    if (issue != null) {
+      AppUtils.showCustomSnackbar(issue.message, SnackType.FAILURE);
       return;
+    }
+    final phone = _country.e164(_phone.text);
+    // الرقم الجديد لا يُحفظ قبل التحقق منه، وإلا فقد ولي الأمر معرّفه لدى
+    // المدرسة بخطأ مطبعي. والتحقّق بوّابةٌ قبل الحفظ لا بديلٌ عنه: الخروج من
+    // هنا كان يُسقط ما عدّله في الاسم والبريد معه.
+    if (phone != _originalPhone) {
+      final changed = await AppUtils.goWait<bool>(
+        OtpPage(phone: phone, purpose: OtpPurpose.changePhone),
+      );
+      if (changed != true || !context.mounted) return;
+      _originalPhone = phone;
     }
     context.read<ProfileBloc>().add(SaveProfileEvent(
           entity: ProfileEntity(
@@ -191,7 +218,7 @@ class _PersonalDataPageState extends State<PersonalDataPage> {
             nationalId: _nationalId.text.trim(),
             email: _email.text.trim(),
             workplace: _workplace.text.trim(),
-            phone: _phone.text.trim(),
+            phone: phone,
           ),
         ));
   }

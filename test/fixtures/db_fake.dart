@@ -2,6 +2,7 @@ import 'package:smartble_parent/core/enums/attendance_status.dart';
 import 'package:smartble_parent/core/enums/note_type.dart';
 import 'package:smartble_parent/core/errors/exceptions.dart';
 import 'package:smartble_parent/core/utils/app_utils.dart';
+import 'package:smartble_parent/core/utils/countries.dart';
 import 'package:smartble_parent/features/parent/domain/entities/auth_entities.dart';
 import 'package:smartble_parent/features/parent/domain/entities/base_entity.dart';
 import 'package:smartble_parent/features/parent/domain/entities/service_entities.dart';
@@ -79,6 +80,21 @@ class DbFake implements Db {
           throw ValidationException('أدخل كلمة المرور الحالية.');
         }
         return _delayed(true);
+      };
+
+  @override
+  Future<String> Function(PhoneEntity) get requestPhoneChange => (entity) async {
+        _ensurePhone(entity.phone);
+        return _delayed(entity.phone);
+      };
+
+  @override
+  Future<ParentUser> Function(OtpEntity) get changePhone => (entity) async {
+        if (entity.code.length != 4) {
+          throw ValidationException('أدخل الرمز المكوّن من أربعة أرقام.');
+        }
+        DesignData.parent = DesignData.parent.copyWith(phone: entity.phone);
+        return _delayed(DesignData.parent);
       };
 
   @override
@@ -270,10 +286,13 @@ class DbFake implements Db {
   Future<StudentStats> Function(StatsFilterEntity) get stats =>
       (entity) => _delayed(DesignData.stats(entity.periodKey));
 
+  /// القاعدة نفسها التي في الخادم (`parent_api/utils.py: parse_phone`):
+  /// أيّ دولةٍ بمفتاحها، والسعوديّ وحده يلزمه شكله المعروف. كان الشرط
+  /// «عشر خاناتٍ تبدأ بـ05»، فكان الاختبار يرفض ما صار الخادم يقبله.
   void _ensurePhone(String phone) {
-    final digits = AppUtils.convertToWesternNumerals(phone).replaceAll(RegExp(r'\D'), '');
-    if (digits.length != 10 || !digits.startsWith('05')) {
-      throw ValidationException('أدخل رقم جوال سعودي صحيح يبدأ بـ 05.');
+    final parsed = parsePhone(AppUtils.convertToWesternNumerals(phone));
+    if (!parsed.country.accepts(parsed.national)) {
+      throw ValidationException('أدخل رقم جوال صحيح مع مفتاح دولته.');
     }
   }
 }

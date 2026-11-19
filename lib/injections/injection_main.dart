@@ -14,6 +14,7 @@ import '../features/parent/data/datasources/db_remote.dart';
 import '../features/parent/data/repositories/repo_imp.dart';
 import '../features/parent/domain/repositories/repo.dart';
 import '../features/parent/domain/usecases/change_password_use_case.dart';
+import '../features/parent/domain/usecases/change_phone_use_case.dart';
 import '../features/parent/domain/usecases/create_account_use_case.dart';
 import '../features/parent/domain/usecases/delete_account_use_case.dart';
 import '../features/parent/domain/usecases/forgot_password_use_case.dart';
@@ -40,6 +41,7 @@ import '../features/parent/domain/usecases/get_support_use_case.dart';
 import '../features/parent/domain/usecases/login_use_case.dart';
 import '../features/parent/domain/usecases/mark_all_read_use_case.dart';
 import '../features/parent/domain/usecases/request_otp_use_case.dart';
+import '../features/parent/domain/usecases/request_phone_change_use_case.dart';
 import '../features/parent/domain/usecases/reset_password_use_case.dart';
 import '../features/parent/domain/usecases/respond_to_action_use_case.dart';
 import '../features/parent/domain/usecases/save_health_use_case.dart';
@@ -104,6 +106,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => ForgotPasswordUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => ResetPasswordUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => ChangePasswordUseCase(repo: sl(), db: sl()));
+  sl.registerLazySingleton(() => RequestPhoneChangeUseCase(repo: sl(), db: sl()));
+  sl.registerLazySingleton(() => ChangePhoneUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => DeleteAccountUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => GetMeUseCase(repo: sl(), db: sl()));
   sl.registerLazySingleton(() => UpdateProfileUseCase(repo: sl(), db: sl()));
@@ -143,6 +147,8 @@ Future<void> init() async {
         forgotPasswordUseCase: sl(),
         resetPasswordUseCase: sl(),
         changePasswordUseCase: sl(),
+        requestPhoneChangeUseCase: sl(),
+        changePhoneUseCase: sl(),
         deleteAccountUseCase: sl(),
       ));
   sl.registerFactory(() => StudentsBloc(getStudentsUseCase: sl()));

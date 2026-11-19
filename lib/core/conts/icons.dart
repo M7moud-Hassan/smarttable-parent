@@ -18,6 +18,8 @@ class AppIcons {
   static const IconData info = Icons.info_outline;
   static const IconData check = Icons.check;
   static const IconData checkCircle = Icons.check_circle_outline;
+  static const IconData search = Icons.search;
+  static const IconData chevronDown = Icons.keyboard_arrow_down_rounded;
 
   // التنقل
   static const IconData back = Icons.arrow_forward_ios;

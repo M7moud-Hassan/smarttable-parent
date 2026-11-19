@@ -232,6 +232,24 @@ class DbRemote implements Db {
       };
 
   @override
+  Future<String> Function(PhoneEntity) get requestPhoneChange => (entity) async {
+        final data = await _object('POST', 'auth/change-phone/',
+            body: {'phone': entity.phone});
+        // الخادم يردّ الرقم بصيغته المعروضة، وهي التي تُرسل في خطوة التثبيت
+        // فيتطابق الطرفان ولا يُبحث عن رمزٍ تحت رقمٍ آخر.
+        return data['phone']?.toString() ?? entity.phone;
+      };
+
+  @override
+  Future<ParentUser> Function(OtpEntity) get changePhone => (entity) async {
+        final data = await _object('POST', 'auth/change-phone/', body: {
+          'phone': entity.phone,
+          'code': entity.code,
+        });
+        return ParentUser.fromJson(data);
+      };
+
+  @override
   Future<bool> Function() get deleteAccount => () async {
         await _send('POST', 'auth/delete-account/');
         return true;

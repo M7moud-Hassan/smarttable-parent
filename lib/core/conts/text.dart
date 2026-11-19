@@ -44,6 +44,23 @@ class AppText {
 
   static String get phoneHint => 'phoneHint'.tr();
 
+  // ─── حقل رقم الجوال ومنتقي الدولة ───────────────────────────────────────
+  static String get chooseCountry => 'chooseCountry'.tr();
+
+  static String get searchCountry => 'searchCountry'.tr();
+
+  static String get noCountryFound => 'noCountryFound'.tr();
+
+  static String get phoneTooShort => 'phoneTooShort'.tr();
+
+  static String get phoneTooLong => 'phoneTooLong'.tr();
+
+  static String get phoneNotMobile => 'phoneNotMobile'.tr();
+
+  static String get phoneUpdated => 'phoneUpdated'.tr();
+
+  static String get otpResent => 'otpResent'.tr();
+
   static String get sendOtp => 'sendOtp'.tr();
 
   static String get termsPrefix => 'termsPrefix'.tr();

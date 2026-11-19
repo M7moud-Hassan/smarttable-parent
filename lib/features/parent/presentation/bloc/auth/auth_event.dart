@@ -70,6 +70,26 @@ final class ChangePasswordEvent extends AuthEvent {
   List<Object?> get props => [entity];
 }
 
+/// طلب رمزٍ للرقم الجديد (شاشة هـ١).
+final class RequestPhoneChangeEvent extends AuthEvent {
+  const RequestPhoneChangeEvent({required this.entity});
+
+  final PhoneEntity entity;
+
+  @override
+  List<Object?> get props => [entity];
+}
+
+/// تثبيت الرقم الجديد بالرمز.
+final class ChangePhoneEvent extends AuthEvent {
+  const ChangePhoneEvent({required this.entity});
+
+  final OtpEntity entity;
+
+  @override
+  List<Object?> get props => [entity];
+}
+
 final class DeleteAccountEvent extends AuthEvent {}
 
 final class LogoutEvent extends AuthEvent {}

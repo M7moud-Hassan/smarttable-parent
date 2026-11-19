@@ -26,6 +26,13 @@ abstract class Db {
   Future<String> Function(PhoneEntity) get forgotPassword;
   Future<bool> Function(ResetPasswordEntity) get resetPassword;
   Future<bool> Function(ChangePasswordEntity) get changePassword;
+
+  /// `auth/change-phone/` بلا رمز — يرسل رمزًا إلى الرقم الجديد ويعيده.
+  Future<String> Function(PhoneEntity) get requestPhoneChange;
+
+  /// `auth/change-phone/` بالرمز — يثبّت الرقم ويعيد وليّ الأمر بعد إعادة
+  /// ربط أبنائه. و`OtpEntity` هي الوسيط نفسه (رقم ورمز) فلا يُستنسخ.
+  Future<ParentUser> Function(OtpEntity) get changePhone;
   Future<bool> Function() get deleteAccount;
 
   // ─── الحساب والأبناء ─────────────────────────────────────────────────────

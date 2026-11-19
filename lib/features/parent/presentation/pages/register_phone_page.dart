@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -8,11 +7,12 @@ import '../../../../core/conts/app_text_styles.dart';
 import '../../../../core/conts/icons.dart';
 import '../../../../core/conts/text.dart';
 import '../../../../core/enums/snack_bar_type_enum.dart';
-import '../../../../core/share/inputs/app_text_field.dart';
+import '../../../../core/share/inputs/phone_field.dart';
 import '../../../../core/share/widgets/app_card.dart';
 import '../../../../core/share/widgets/buttons.dart';
 import '../../../../core/share/widgets/parent_scaffold.dart';
 import '../../../../core/utils/app_utils.dart';
+import '../../../../core/utils/countries.dart';
 import '../../../../injections/injection_main.dart';
 import '../../domain/entities/auth_entities.dart';
 import '../bloc/auth/auth_bloc.dart';
@@ -29,8 +29,12 @@ class RegisterPhonePage extends StatefulWidget {
 
 class _RegisterPhonePageState extends State<RegisterPhonePage> {
   final _phone = TextEditingController();
+  Country _country = kDefaultCountry;
 
-  bool get _canSubmit => _phone.text.trim().length == 10;
+  /// الزرّ يُفتح على رقمٍ صالحٍ في الدولة المختارة لا على عشر خاناتٍ دائمًا:
+  /// البحريني ثمانٍ والمصري عشر، و«عشر خانات» كان يحبس الأوّل ويمرّر رقمًا
+  /// سعوديًّا مختلقًا كـ`0000000000`.
+  bool get _canSubmit => _country.accepts(_phone.text);
 
   @override
   void dispose() {
@@ -66,23 +70,18 @@ class _RegisterPhonePageState extends State<RegisterPhonePage> {
                 SizedBox(height: 26.h),
                 FieldLabel(AppText.enterLinkedPhone),
                 SizedBox(height: 16.h),
-                AppTextField(
+                PhoneField(
                   controller: _phone,
-                  hint: AppText.phoneHint,
-                  icon: AppIcons.phone,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(10),
-                  ],
+                  country: _country,
+                  onCountryChanged: (c) => setState(() => _country = c),
                   onChanged: (_) => setState(() {}),
                 ),
                 SizedBox(height: 26.h),
                 PrimaryButton(
                   label: AppText.sendOtp,
                   enabled: _canSubmit && state is! AuthLoading,
-                  onTap: () => context.read<AuthBloc>().add(
-                      RequestOtpEvent(entity: PhoneEntity(phone: _phone.text.trim()))),
+                  onTap: () => context.read<AuthBloc>().add(RequestOtpEvent(
+                      entity: PhoneEntity(phone: _country.e164(_phone.text)))),
                 ),
                 SizedBox(height: 20.h),
                 _terms(),
